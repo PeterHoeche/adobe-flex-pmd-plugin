@@ -59,7 +59,7 @@ public final class EditorUtils
    public static void gotoLine( final IWorkbenchPage page,
                                 final int line,
                                 final int column,
-                                final int linesToSelect )
+                                final int lastLineToSelect )
    {
 
       final ITextEditor editor = getTextEditor( page );
@@ -71,8 +71,7 @@ public final class EditorUtils
       try
       {
          int initialLineOffSet = document.getLineOffset( lineToGo );
-         int finalLineOffSet = document.getLineOffset( lineToGo
-               + linesToSelect );
+         int finalLineOffSet = document.getLineOffset( lastLineToSelect );
 
          editor.selectAndReveal( initialLineOffSet
                                        + column,
@@ -128,7 +127,7 @@ public final class EditorUtils
                                                    final IWorkbenchPage page,
                                                    final int line,
                                                    final int column,
-                                                   final int linesToSelect )
+                                                   final int lastLineToSelect )
    {
 
       final IEditorPart part = openFilePathInEditor( absolutePath,
@@ -139,7 +138,7 @@ public final class EditorUtils
          gotoLine( page,
                    line,
                    column,
-                   linesToSelect );
+                   lastLineToSelect );
       }
 
       return part;
