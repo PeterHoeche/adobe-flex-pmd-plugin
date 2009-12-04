@@ -54,13 +54,17 @@ public class ActivePartChangeDetector implements IPartListener2
    {
       final IWorkbenchPage page = part.getPage();
       final IEditorPart editor = page.getActiveEditor();
-      final IFileEditorInput fileInputEditor = ( IFileEditorInput ) editor.getEditorInput()
-                                                                          .getAdapter( IEditorInput.class );
 
-      if ( fileInputEditor != null
-            && changeListener != null )
+      if ( editor != null )
       {
-         changeListener.partBroughtToTop( fileInputEditor.getFile() );
+         final IFileEditorInput fileInputEditor = ( IFileEditorInput ) editor.getEditorInput()
+                                                                             .getAdapter( IEditorInput.class );
+
+         if ( fileInputEditor != null
+               && changeListener != null )
+         {
+            changeListener.partBroughtToTop( fileInputEditor.getFile() );
+         }
       }
    }
 
