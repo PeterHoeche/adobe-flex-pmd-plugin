@@ -1,0 +1,261 @@
+<?eclipse version="3.4"?>
+<plugin>
+	<extension
+         id="flexpmdbuilder"
+         name="FlexPMD Builder"
+         point="org.eclipse.core.resources.builders">
+      <builder
+            hasNature="true">
+         <run
+               class="com.adobe.ac.pmd.eclipse.builder.FlexPMDBuilder">
+         </run>
+      </builder>
+   </extension>
+   <extension
+         id="flexpmdnature"
+         name="FlexPMD Nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="com.adobe.ac.pmd.eclipse.builder.FlexPMDNature">
+         </run>
+      </runtime>
+      <builder
+            id="com.adobe.ac.pmd.eclipse.flexpmdbuilder">
+      </builder>
+   </extension>
+   
+   <extension
+         id="FlexPMDProblem"
+         name="FlexPMD Problem"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            name="FlexPMD"
+            class="com.adobe.ac.pmd.eclipse.flexpmd.preferences.FlexPmdPreferencePage"
+            id="com.adobe.ac.pmd.eclipse.flexpmd.preferences.FlexPmdPreferencePage">
+      </page>
+   </extension>
+   
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="com.adobe.ac.pmd.eclipse.flexpmd.preferences.PreferenceInitializer">
+      </initializer>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            name="Flex Quality"
+            id="com.adobe.ac.pmd.eclipse">
+      </category>
+      <view
+            name="FlexPMD View"
+            icon="icons/bug.gif"
+            category="com.adobe.ac.pmd.eclipse"
+            class="com.adobe.ac.pmd.eclipse.flexpmd.view.ViolationsView"
+            id="com.adobe.ac.pmd.eclipse.flexpmd.view.ViolationsView">
+      </view>
+      <view
+            category="com.adobe.ac.pmd.eclipse"
+            class="com.adobe.ac.pmd.eclipse.flexcpd.view.CPDView"
+            icon="icons/cpd.gif"
+            id="com.adobe.ac.pmd.eclipse.flexcpd.view.CPDView"
+            name="CPD View">
+      </view>
+      <view
+            category="com.adobe.ac.pmd.eclipse"
+            class="com.adobe.ac.pmd.eclipse.flexpmd.view.OutlineView"
+            icon="icons/bug.gif"
+            id="com.adobe.ac.pmd.eclipse.flexpmd.view.OutlineView"
+            name="FlexPMD Outline">
+      </view>
+   </extension>
+   
+   <extension
+         name="FlexPMD"
+         point="org.eclipse.ui.popupMenus">
+      
+      <objectContribution
+            adaptable="true"
+            id="flexPMDResourcePopupMenu"
+            objectClass="org.eclipse.core.resources.IProject">
+         
+         <menu
+           label="FlexPMD"
+           path="additions"
+           id="com.adobe.ac.pmd.eclipse.flexpmd.menu">
+            <separator name="flexPMDGroup">
+            </separator>
+         </menu>
+         
+         <visibility>
+			<not>
+				<objectState
+					name="nature"
+					value="com.adobe.ac.pmd.eclipse.flexpmdnature">
+				</objectState>
+			</not>
+		 </visibility>
+		 
+         <action
+               class="com.adobe.ac.pmd.eclipse.builder.actions.AddNatureAction"
+               id="com.adobe.ac.pmd.eclipse.builder.actions.AddNatureAction"
+               label="Add FlexPMD Nature"
+               enablesFor="1"
+               menubarPath="com.adobe.ac.pmd.eclipse.flexpmd/flexPMDGroup">
+         </action>
+      </objectContribution>
+      
+      <objectContribution
+            adaptable="true"
+            id="flexPMDResourcePopupMenu"
+            objectClass="org.eclipse.core.resources.IProject">
+         
+         <menu
+           label="FlexPMD"
+           path="additions"
+           id="com.adobe.ac.pmd.eclipse.flexpmd">
+            <separator name="flexPMDGroup">
+            </separator>
+         </menu>
+         
+         <visibility>
+			<objectState
+				name="nature"
+				value="com.adobe.ac.pmd.eclipse.flexpmdnature">
+			</objectState>
+		 </visibility>
+		 
+         <action
+               class="com.adobe.ac.pmd.eclipse.builder.actions.RemoveNatureAction"
+               id="com.adobe.ac.pmd.eclipse.builder.actions.RemoveNatureAction"
+               label="Remove FlexPMD Nature"
+               enablesFor="1"
+               menubarPath="com.adobe.ac.pmd.eclipse.flexpmd/flexPMDGroup">
+         </action>
+      </objectContribution>
+      
+      <objectContribution
+            adaptable="true"
+            id="flexPMDResourcePopupMenu"
+            objectClass="org.eclipse.core.resources.IProject">
+         
+         <menu
+           label="FlexPMD"
+           path="additions"
+           id="com.adobe.ac.pmd.eclipse.flexpmd">
+            <separator name="flexPMDGroup">
+            </separator>
+         </menu>
+         
+         <action
+               class="com.adobe.ac.pmd.eclipse.flexpmd.actions.CleanFlexPmdMarkersAction"
+               id="com.adobe.ac.pmd.eclipse.flexpmd.actions.CleanFlexPmdMarkersAction"
+               enablesFor="1"
+               label="Clean FlexPMD markers"
+               menubarPath="com.adobe.ac.pmd.eclipse.flexpmd/flexPMDGroup">
+         </action>
+         
+      </objectContribution>
+      <objectContribution
+            adaptable="true"
+            id="flexPMDResourcePopupMenu"
+            objectClass="org.eclipse.core.resources.IResource">
+         
+         <menu
+           label="FlexPMD"
+           path="additions"
+           id="com.adobe.ac.pmd.eclipse.flexpmd">
+            <separator name="flexPMDGroup">
+            </separator>
+         </menu>
+         
+         <action
+               class="com.adobe.ac.pmd.eclipse.flexcpd.actions.RunFlexCPDAction"
+               id="com.adobe.ac.pmd.eclipse.flexcpd.actions.RunFlexCPDAction"
+               label="Find suspect cut and paste"
+               enablesFor="1"
+               menubarPath="com.adobe.ac.pmd.eclipse.flexpmd/flexPMDGroup">
+         </action>
+
+         <action
+               class="com.adobe.ac.pmd.eclipse.flexpmd.actions.RunFlexPmdAction"
+               id="com.adobe.ac.pmd.eclipse.flexpmd.actions.RunFlexPmdAction"
+               enablesFor="1"
+               label="Run FlexPMD"
+               menubarPath="com.adobe.ac.pmd.eclipse.flexpmd/flexPMDGroup">
+         </action>
+      </objectContribution>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            name="FlexPMD"
+            id="com.adobe.ac.pmd.eclipse.flexpmd.runCommand.category">
+      </category>
+      <command
+            name="Run FlexPMD on selected resource"
+            categoryId="com.adobe.ac.pmd.eclipse.flexpmd.runCommand.category"
+            id="com.adobe.ac.pmd.eclipse.flexpmd.runCommand">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            commandId="ccom.adobe.ac.pmd.eclipse.flexpmd.runCommand.category"
+            class="com.adobe.ac.pmd.eclipse.flexpmd.actions.RunFlexPmdAction">
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="com.adobe.ac.pmd.eclipse.flexpmd.runCommand.category"
+            contextId="org.eclipse.ui.contexts.window"
+            sequence="M1+6"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
+      </key>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+         <toolbar
+               id="com.adobe.ac.pmd.eclipse.ToolBar">
+            <command
+                  commandId="com.adobe.ac.pmd.eclipse.flexpmd.runCommand.category"
+                  icon="icons/bug.gif"
+                  tooltip="Run FlexPMD on selected folder"
+                  id="com.adobe.ac.pmd.eclipse.toolbar.runCommand">
+            </command>
+         </toolbar>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="org.eclipse.jdt.ui.JavaPerspective">
+         <view
+               id="com.adobe.ac.pmd.eclipse.flexpmd.view.OutlineView"
+               ratio="0.5"
+               relationship="right"
+               relative="org.eclipse.ui.views.TaskList">
+         </view>
+      </perspectiveExtension>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+   </extension>
+</plugin>
