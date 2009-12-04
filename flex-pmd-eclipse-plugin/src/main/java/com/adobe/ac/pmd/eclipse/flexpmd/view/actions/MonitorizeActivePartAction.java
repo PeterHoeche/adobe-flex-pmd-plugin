@@ -143,6 +143,7 @@ public class MonitorizeActivePartAction extends Action implements IActiveEditorC
          public void run()
          {
             updatingMarkers = true;
+            FlexPMDMarkerUtils.cleanMarkers( file );
             FlexPMDMarkerUtils.addMarkers( violations );
             updatingMarkers = false;
 
