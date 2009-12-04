@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <description name="FlexPMD">
+      FlexPMD eclipse plugin
+   </description>
+   <feature url="features/com.adobe.ac.pmd.eclipse_1.0.0.v200912040915.jar" id="com.adobe.ac.pmd.eclipse" version="1.0.0.v200912040915">
+      <category name="com.adobe.ac.pmd.eclipse.update"/>
+   </feature>
+   <category-def name="com.adobe.ac.pmd.eclipse.update" label="FlexPMD">
+      <description>
+         FlexPMD
+      </description>
+   </category-def>
+</site>
