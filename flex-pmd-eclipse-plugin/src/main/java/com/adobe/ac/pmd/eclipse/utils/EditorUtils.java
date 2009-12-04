@@ -71,12 +71,17 @@ public final class EditorUtils
       try
       {
          int initialLineOffSet = document.getLineOffset( lineToGo );
-         int finalLineOffSet = document.getLineOffset( lastLineToSelect );
+         int numCharactersToSelect = 0;
+
+         if ( lastLineToSelect > 0 )
+         {
+            numCharactersToSelect = document.getLineOffset( lastLineToSelect )
+                  - initialLineOffSet;
+         }
 
          editor.selectAndReveal( initialLineOffSet
                                        + column,
-                                 finalLineOffSet
-                                       - initialLineOffSet );
+                                 numCharactersToSelect );
       }
       catch ( final BadLocationException e )
       {
