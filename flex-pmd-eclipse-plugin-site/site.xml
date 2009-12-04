@@ -3,7 +3,7 @@
    <description name="FlexPMD">
       FlexPMD eclipse plugin
    </description>
-   <feature url="features/com.adobe.ac.pmd.eclipse_1.0.0.v200912041345.jar" id="com.adobe.ac.pmd.eclipse" version="1.0.0.v200912041345">
+   <feature url="features/com.adobe.ac.pmd.eclipse_1.0.0.v200912041700.jar" id="com.adobe.ac.pmd.eclipse" version="1.0.0.v200912041700">
       <category name="com.adobe.ac.pmd.eclipse.update"/>
    </feature>
    <category-def name="com.adobe.ac.pmd.eclipse.update" label="FlexPMD">
