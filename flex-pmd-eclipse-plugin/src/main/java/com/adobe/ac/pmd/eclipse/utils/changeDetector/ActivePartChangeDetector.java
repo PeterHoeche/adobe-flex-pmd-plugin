@@ -30,6 +30,8 @@
  */
 package com.adobe.ac.pmd.eclipse.utils.changeDetector;
 
+import java.util.logging.Logger;
+
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
@@ -39,6 +41,8 @@ import org.eclipse.ui.IWorkbenchPartReference;
 
 public class ActivePartChangeDetector implements IPartListener2
 {
+   private static final Logger               LOGGER = Logger.getLogger( ActivePartChangeDetector.class.getName() );
+
    private final IActiveEditorChangeListener changeListener;
 
    public ActivePartChangeDetector( final IActiveEditorChangeListener changeListener )
@@ -57,13 +61,22 @@ public class ActivePartChangeDetector implements IPartListener2
 
       if ( editor != null )
       {
-         final IFileEditorInput fileInputEditor = ( IFileEditorInput ) editor.getEditorInput()
-                                                                             .getAdapter( IEditorInput.class );
+         IEditorInput editorInput = editor.getEditorInput();
 
-         if ( fileInputEditor != null
-               && changeListener != null )
+         if ( editor instanceof IFileEditorInput )
          {
-            changeListener.partBroughtToTop( fileInputEditor.getFile() );
+            final IFileEditorInput fileInputEditor = ( IFileEditorInput ) editorInput.getAdapter( IEditorInput.class );
+
+            if ( fileInputEditor != null
+                  && changeListener != null )
+            {
+               changeListener.partBroughtToTop( fileInputEditor.getFile() );
+            }
+         }
+         else
+         {
+            LOGGER.info( "part brought to top is not an IFileEditorInput is a  "
+                  + editor.getClass().getName() );
          }
       }
    }
