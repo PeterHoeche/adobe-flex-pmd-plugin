@@ -2,7 +2,7 @@
 <feature
       id="com.adobe.ac.pmd.eclipse"
       label="FlexPMD"
-      version="1.0.0.v200912082357"
+      version="1.0.0.v200912091712"
       provider-name="Adobe">
 
    <description>
@@ -41,7 +41,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
          id="com.adobe.ac.pmd.eclipse"
          download-size="0"
          install-size="0"
-         version="1.0.0.v200912082357"
+         version="1.0.0.v200912091712"
          unpack="false"/>
 
 </feature>
