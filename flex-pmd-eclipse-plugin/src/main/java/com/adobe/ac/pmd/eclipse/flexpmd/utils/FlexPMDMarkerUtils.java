@@ -37,11 +37,19 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceRuleFactory;
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
+import org.eclipse.core.runtime.jobs.Job;
 
 import com.adobe.ac.pmd.eclipse.builder.FlexPMDBuilder;
 import com.adobe.ac.pmd.eclipse.flexpmd.cmd.data.FlexPmdFileVO;
@@ -75,7 +83,7 @@ public class FlexPMDMarkerUtils
       }
    }
 
-   public static final void addMarkers( final FlexPmdFileVO flexPmdFile )
+   private static final void addMarkers( final FlexPmdFileVO flexPmdFile )
    {
       final IFile ifile = getFile( flexPmdFile );
 
@@ -96,16 +104,59 @@ public class FlexPMDMarkerUtils
       }
    }
 
+   private static ISchedulingRule getschedulingRule( IFile resource )
+   {
+      final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+      final IResourceRuleFactory ruleFactory = workspace.getRuleFactory();
+      ISchedulingRule rule = ruleFactory.markerRule( resource );
+
+      return rule;
+   }
+
    public static final void addMarkers( final PmdViolationsVO violations )
    {
       if ( violations != null )
       {
-         final List< FlexPmdFileVO > violatedFiles = violations.getFilesInViolation();
-
-         for ( final FlexPmdFileVO flexPmdFile : violatedFiles )
+         final Job job = new Job( "add markers job" )
          {
-            addMarkers( flexPmdFile );
-         }
+            @Override
+            protected IStatus run( IProgressMonitor monitor )
+            {
+               final IWorkspaceRunnable action = new IWorkspaceRunnable()
+               {
+                  public void run( IProgressMonitor monitor ) throws CoreException
+                  {
+                     final List< FlexPmdFileVO > violatedFiles = violations.getFilesInViolation();
+                     monitor.beginTask( "PMD Applying markers",
+                                        violatedFiles.size() );
+
+                     for ( final FlexPmdFileVO flexPmdFile : violatedFiles )
+                     {
+                        addMarkers( flexPmdFile );
+                        monitor.worked( 1 );
+                     }
+                  }
+               };
+
+               final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+
+               IFile file = getFile( violations.getFilesInViolation().get( 0 ) );
+               try
+               {
+                  workspace.run( action,
+                                 getschedulingRule( file ),
+                                 IWorkspace.AVOID_UPDATE,
+                                 monitor );
+               }
+               catch ( CoreException e )
+               {
+                  e.printStackTrace();
+               }
+
+               return Status.OK_STATUS;
+            }
+         };
+         job.schedule();
       }
    }
 
@@ -132,16 +183,11 @@ public class FlexPMDMarkerUtils
    {
       try
       {
-         final IMarker[] markers = project.findMarkers( MARKER_TYPE,
-                                                        false,
-                                                        IResource.DEPTH_INFINITE );
-
-         for ( final IMarker marker : markers )
-         {
-            marker.delete();
-         }
+         ( ( IResource ) project.getAdapter( IResource.class ) ).deleteMarkers( MARKER_TYPE,
+                                                                                true,
+                                                                                IResource.DEPTH_INFINITE );
       }
-      catch ( final CoreException e )
+      catch ( CoreException e )
       {
          LOGGER.info( e.getMessage() );
       }
@@ -151,12 +197,43 @@ public class FlexPMDMarkerUtils
    {
       if ( violations != null )
       {
-         final List< FlexPmdFileVO > violatedFiles = violations.getFilesInViolation();
-
-         for ( final FlexPmdFileVO flexPmdFile : violatedFiles )
+         final Job job = new Job( "add markers job" )
          {
-            cleanMarkers( flexPmdFile );
-         }
+            protected IStatus run( IProgressMonitor monitor )
+            {
+               final IWorkspaceRunnable action = new IWorkspaceRunnable()
+               {
+                  public void run( IProgressMonitor monitor ) throws CoreException
+                  {
+                     final List< FlexPmdFileVO > violatedFiles = violations.getFilesInViolation();
+
+                     for ( final FlexPmdFileVO flexPmdFile : violatedFiles )
+                     {
+                        cleanMarkers( flexPmdFile );
+                     }
+                  }
+               };
+
+               final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+               IFile file = getFile( violations.getFilesInViolation().get( 0 ) );
+
+               try
+               {
+                  workspace.run( action,
+                                 getschedulingRule( file ),
+                                 IWorkspace.AVOID_UPDATE,
+                                 monitor );
+               }
+               catch ( CoreException e )
+               {
+                  e.printStackTrace();
+               }
+
+               return Status.OK_STATUS;
+            }
+         };
+
+         job.schedule();
       }
    }
 
