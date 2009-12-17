@@ -31,7 +31,6 @@
 package com.adobe.ac.pmd.eclipse.flexpmd.utils;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -51,14 +50,13 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
 
-import com.adobe.ac.pmd.eclipse.builder.FlexPMDBuilder;
+import com.adobe.ac.pmd.eclipse.FlexPMDPlugin;
 import com.adobe.ac.pmd.eclipse.flexpmd.cmd.data.FlexPmdFileVO;
 import com.adobe.ac.pmd.eclipse.flexpmd.cmd.data.PmdViolationsVO;
 import com.adobe.ac.pmd.eclipse.flexpmd.cmd.data.ViolationVO;
 
 public class FlexPMDMarkerUtils
 {
-   private static final Logger LOGGER      = Logger.getLogger( FlexPMDBuilder.class.getName() );
    private static final String MARKER_TYPE = "com.adobe.ac.pmd.eclipse.FlexPMDProblem";
 
    private static final void addMarker( final IFile file,
@@ -79,7 +77,7 @@ public class FlexPMDMarkerUtils
       }
       catch ( final CoreException e )
       {
-         LOGGER.info( e.getMessage() );
+         FlexPMDPlugin.getDefault().logInfo( e.getMessage() );
       }
    }
 
@@ -115,6 +113,7 @@ public class FlexPMDMarkerUtils
 
    public static final void addMarkers( final PmdViolationsVO violations )
    {
+      // && violations.getFilesInViolation().size() > 0
       if ( violations != null )
       {
          final Job job = new Job( "add markers job" )
@@ -160,7 +159,7 @@ public class FlexPMDMarkerUtils
       }
    }
 
-   public static void cleanMarkers( final FlexPmdFileVO flexPmdFile )
+   private static void cleanMarkers( final FlexPmdFileVO flexPmdFile )
    {
       cleanMarkers( getFile( flexPmdFile ) );
    }
@@ -175,7 +174,7 @@ public class FlexPMDMarkerUtils
       }
       catch ( final CoreException e )
       {
-         LOGGER.info( e.getMessage() );
+         FlexPMDPlugin.getDefault().logInfo( e.getMessage() );
       }
    }
 
@@ -189,12 +188,13 @@ public class FlexPMDMarkerUtils
       }
       catch ( CoreException e )
       {
-         LOGGER.info( e.getMessage() );
+         FlexPMDPlugin.getDefault().logInfo( e.getMessage() );
       }
    }
 
    public static void cleanMarkers( final PmdViolationsVO violations )
    {
+      // && violations.getFilesInViolation().size() > 0
       if ( violations != null )
       {
          final Job job = new Job( "add markers job" )
@@ -226,7 +226,7 @@ public class FlexPMDMarkerUtils
                }
                catch ( CoreException e )
                {
-                  e.printStackTrace();
+                  FlexPMDPlugin.getDefault().logInfo( e.getMessage() );
                }
 
                return Status.OK_STATUS;
@@ -262,7 +262,7 @@ public class FlexPMDMarkerUtils
       }
       catch ( final CoreException e )
       {
-         LOGGER.info( e.getMessage() );
+         FlexPMDPlugin.getDefault().logInfo( e.getMessage() );
       }
 
       return new IMarker[]

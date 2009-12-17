@@ -39,7 +39,7 @@ import java.io.InputStreamReader;
 /**
  * Usage of following class can go as ...
  * <P>
- *
+ * 
  * <PRE>
  * &lt;CODE&gt;
  *       SysCommandExecutor cmdExecutor = new SysCommandExecutor();
@@ -48,11 +48,11 @@ import java.io.InputStreamReader;
  *       int exitStatus = cmdExecutor.runCommand(commandLine);
  * &lt;/CODE&gt;
  * </PRE>
- *
+ * 
  * </P>
  * OR
  * <P>
- *
+ * 
  * <PRE>
  * &lt;CODE&gt;
  *       SysCommandExecutor cmdExecutor = new SysCommandExecutor();
@@ -61,7 +61,7 @@ import java.io.InputStreamReader;
  *       String cmdOutput = cmdExecutor.getCommandOutput();
  * &lt;/CODE&gt;
  * </PRE>
- *
+ * 
  * </P>
  */
 public class SysCommandExecutor
@@ -150,7 +150,7 @@ public class SysCommandExecutor
       fCmdErrorThread.stopReading();
    }
 
-   public int runCommand( final String commandLine ) throws Exception
+   public int runCommand( final String[] commandLine ) throws Exception
    {
       final Process process = runCommandHelper( commandLine );
 
@@ -174,7 +174,7 @@ public class SysCommandExecutor
       return exitStatus;
    }
 
-   private Process runCommandHelper( final String commandLine ) throws IOException
+   private Process runCommandHelper( final String[] commandLine ) throws IOException
    {
       Process process = null;
       if ( fWorkingDirectory == null )

@@ -30,9 +30,14 @@
  */
 package com.adobe.ac.pmd.eclipse;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
+
+import com.adobe.ac.pmd.eclipse.flexpmd.actions.NotifyErrorAction;
 
 public class FlexPMDPlugin extends AbstractUIPlugin
 {
@@ -63,5 +68,34 @@ public class FlexPMDPlugin extends AbstractUIPlugin
    {
       plugin = null;
       super.stop( context );
+   }
+
+   public void logError( String message,
+                         Throwable error )
+   {
+      getLog().log( new Status( IStatus.ERROR, getBundle().getSymbolicName(), 0, message
+            + error.getMessage(), error ) );
+   }
+
+   public void logWarning( String message,
+                           Throwable error )
+   {
+      getLog().log( new Status( IStatus.WARNING, getBundle().getSymbolicName(), 0, message
+            + error.getMessage(), error ) );
+   }
+
+   public void logInfo( String message )
+   {
+      getLog().log( new Status( IStatus.INFO, getBundle().getSymbolicName(), message ) );
+   }
+
+   public void showError( final String message,
+                          final Throwable t )
+   {
+      final Runnable uiAction = new NotifyErrorAction( message );
+      Display.getDefault().asyncExec( uiAction );
+
+      logError( message,
+                t );
    }
 }

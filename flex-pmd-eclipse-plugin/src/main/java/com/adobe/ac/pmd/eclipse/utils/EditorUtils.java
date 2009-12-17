@@ -30,8 +30,6 @@
  */
 package com.adobe.ac.pmd.eclipse.utils;
 
-import java.util.logging.Logger;
-
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.filesystem.IFileStore;
@@ -47,10 +45,10 @@ import org.eclipse.ui.ide.IGotoMarker;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.adobe.ac.pmd.eclipse.FlexPMDPlugin;
+
 public final class EditorUtils
 {
-   private static final Logger LOGGER = Logger.getLogger( EditorUtils.class.getName() );
-
    private static ITextEditor getTextEditor( final IWorkbenchPage page )
    {
       return ( ITextEditor ) page.getActiveEditor().getAdapter( ITextEditor.class );
@@ -85,7 +83,8 @@ public final class EditorUtils
       }
       catch ( final BadLocationException e )
       {
-         LOGGER.warning( e.getMessage() );
+         FlexPMDPlugin.getDefault().logError( "Error navigating to line",
+                                              e );
       }
    }
 
@@ -108,7 +107,8 @@ public final class EditorUtils
          }
          catch ( final PartInitException e )
          {
-            LOGGER.warning( e.getMessage() );
+            FlexPMDPlugin.getDefault().logError( "Error opening file in editor",
+                                                 e );
          }
       }
 

@@ -42,9 +42,8 @@ import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.swt.widgets.Display;
 
-import com.adobe.ac.pmd.eclipse.flexpmd.actions.NotifyErrorAction;
+import com.adobe.ac.pmd.eclipse.FlexPMDPlugin;
 import com.adobe.ac.pmd.eclipse.flexpmd.cmd.FlexPMD;
 import com.adobe.ac.pmd.eclipse.flexpmd.cmd.FlexPmdExecutionException;
 import com.adobe.ac.pmd.eclipse.flexpmd.cmd.data.PmdViolationsVO;
@@ -170,8 +169,8 @@ public class FlexPMDBuilder extends IncrementalProjectBuilder
       }
       catch ( final FlexPmdExecutionException e )
       {
-         final Runnable uiAction = new NotifyErrorAction( e.getMessage() );
-         Display.getDefault().asyncExec( uiAction );
+         FlexPMDPlugin.getDefault().showError( e.getMessage(),
+                                               e );
       }
    }
 }

@@ -31,24 +31,21 @@
 package com.adobe.ac.pmd.eclipse.flexcpd.actions;
 
 import java.io.File;
-import java.util.logging.Logger;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.swt.widgets.Display;
 
+import com.adobe.ac.pmd.eclipse.FlexPMDPlugin;
 import com.adobe.ac.pmd.eclipse.flexcpd.FlexCPDKeys;
 import com.adobe.ac.pmd.eclipse.flexcpd.cmd.FlexCPD;
 import com.adobe.ac.pmd.eclipse.flexcpd.cmd.data.CPDDuplicationsVO;
-import com.adobe.ac.pmd.eclipse.flexpmd.actions.NotifyErrorAction;
 import com.adobe.ac.pmd.eclipse.flexpmd.cmd.FlexPmdExecutionException;
 import com.adobe.ac.pmd.eclipse.utils.IProcessable;
 
 public class RunFlexCPDJob extends Job
 {
-   private static final Logger                     LOGGER = Logger.getLogger( RunFlexCPDJob.class.getName() );
    private String                                  errorMessage;
    private final IProcessable< CPDDuplicationsVO > flexCpd;
    private final File                              resource;
@@ -89,10 +86,8 @@ public class RunFlexCPDJob extends Job
       catch ( final FlexPmdExecutionException e )
       {
          errorMessage = e.getMessage();
-         LOGGER.warning( errorMessage );
-
-         final Runnable uiAction = new NotifyErrorAction( errorMessage );
-         Display.getDefault().asyncExec( uiAction );
+         FlexPMDPlugin.getDefault().showError( "Error running FlexCPD process",
+                                               e );
 
          return Status.CANCEL_STATUS;
       }

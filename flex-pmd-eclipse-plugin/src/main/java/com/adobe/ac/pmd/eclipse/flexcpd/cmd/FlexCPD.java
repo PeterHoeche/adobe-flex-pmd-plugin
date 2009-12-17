@@ -31,12 +31,11 @@
 package com.adobe.ac.pmd.eclipse.flexcpd.cmd;
 
 import java.io.File;
-import java.text.MessageFormat;
-import java.util.logging.Logger;
+import java.util.Arrays;
 
+import com.adobe.ac.pmd.eclipse.FlexPMDPlugin;
 import com.adobe.ac.pmd.eclipse.flexcpd.FlexCPDKeys;
 import com.adobe.ac.pmd.eclipse.flexcpd.cmd.data.CPDDuplicationsVO;
-import com.adobe.ac.pmd.eclipse.flexpmd.cmd.FlexPMD;
 import com.adobe.ac.pmd.eclipse.flexpmd.cmd.FlexPmdExecutionException;
 import com.adobe.ac.pmd.eclipse.flexpmd.preferences.FlexPMDPreferences;
 import com.adobe.ac.pmd.eclipse.utils.FileUtils;
@@ -46,8 +45,6 @@ import com.adobe.ac.pmd.eclipse.utils.cli.SysCommandExecutorFactory;
 
 public class FlexCPD implements IProcessable< CPDDuplicationsVO >
 {
-   private static final Logger LOGGER = Logger.getLogger( FlexPMD.class.getName() );
-
    public CPDDuplicationsVO process( final File resource ) throws FlexPmdExecutionException
    {
       final FlexPMDPreferences conf = FlexPMDPreferences.get();
@@ -57,8 +54,7 @@ public class FlexCPD implements IProcessable< CPDDuplicationsVO >
          throw new FlexPmdExecutionException( FlexCPDKeys.MISSING_CPD_COMMAND_LINE );
       }
 
-      final SysCommandExecutor executor = SysCommandExecutorFactory.newInstance( resource,
-                                                                                 LOGGER );
+      final SysCommandExecutor executor = SysCommandExecutorFactory.newInstance( resource );
       CPDDuplicationsVO cpdResults = null;
 
       try
@@ -66,20 +62,27 @@ public class FlexCPD implements IProcessable< CPDDuplicationsVO >
          final File outPutDirectory = FileUtils.createTemporaryDirectory();
          final String outputFilePath = outPutDirectory.getAbsolutePath().concat( "/cpd.xml" );
 
-         final String command = MessageFormat.format( "{0} -jar {1} -s . -o {2} -m {3}",
-                                                      new Object[]
-                                                      { conf.getJavaVmCommandLine(),
-                                                                  conf.getCpdCommandLinePath(),
-                                                                  outputFilePath,
-                                                                  conf.getCpdMinimumLines() } ).toString();
-         LOGGER.info( command );
-         executor.runCommand( command );
+         String[] commandLine = new String[]
+         { "java",
+                     conf.getJavaVmCommandLine(),
+                     "-jar",
+                     conf.getCpdCommandLinePath(),
+                     "-s",
+                     ".",
+                     "-o",
+                     outputFilePath,
+                     "-m",
+                     conf.getCpdMinimumLines() };
+
+         executor.runCommand( commandLine );
+         FlexPMDPlugin.getDefault().logInfo( Arrays.toString( commandLine ) );
 
          cpdResults = FlexCPDResultsParser.parse( new File( outputFilePath ) );
       }
       catch ( final Exception e )
       {
-         LOGGER.severe( e.getMessage() );
+         FlexPMDPlugin.getDefault().logError( "Error running FlexCPD",
+                                              e );
       }
 
       return cpdResults;

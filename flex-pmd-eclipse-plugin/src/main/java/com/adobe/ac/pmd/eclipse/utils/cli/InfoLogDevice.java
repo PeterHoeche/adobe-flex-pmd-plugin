@@ -30,19 +30,13 @@
  */
 package com.adobe.ac.pmd.eclipse.utils.cli;
 
-import java.util.logging.Logger;
+import com.adobe.ac.pmd.eclipse.FlexPMDPlugin;
 
 public class InfoLogDevice implements ILogDevice
 {
-   private final Logger logger;
-
-   public InfoLogDevice( final Logger logger )
-   {
-      this.logger = logger;
-   }
-
    public void log( final String str )
    {
-      logger.info( str );
+      FlexPMDPlugin.getDefault().logError( str,
+                                           null );
    }
 }

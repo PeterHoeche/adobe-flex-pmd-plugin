@@ -31,9 +31,9 @@
 package com.adobe.ac.pmd.eclipse.flexpmd.cmd;
 
 import java.io.File;
-import java.text.MessageFormat;
-import java.util.logging.Logger;
+import java.util.Arrays;
 
+import com.adobe.ac.pmd.eclipse.FlexPMDPlugin;
 import com.adobe.ac.pmd.eclipse.flexpmd.FlexPMDKeys;
 import com.adobe.ac.pmd.eclipse.flexpmd.cmd.data.PmdViolationsVO;
 import com.adobe.ac.pmd.eclipse.flexpmd.preferences.FlexPMDPreferences;
@@ -44,8 +44,6 @@ import com.adobe.ac.pmd.eclipse.utils.cli.SysCommandExecutorFactory;
 
 public class FlexPMD implements IProcessable< PmdViolationsVO >
 {
-   private static final Logger LOGGER = Logger.getLogger( FlexPMD.class.getName() );
-
    public PmdViolationsVO process( final File resource ) throws FlexPmdExecutionException
    {
       final FlexPMDPreferences conf = FlexPMDPreferences.get();
@@ -60,11 +58,8 @@ public class FlexPMD implements IProcessable< PmdViolationsVO >
          throw new FlexPmdExecutionException( FlexPMDKeys.MISSING_JAVA_COMMAND_LINE );
       }
 
-      final SysCommandExecutor executor = SysCommandExecutorFactory.newInstance( resource,
-                                                                                 LOGGER );
-      final String ruleSetPath = "".equals( conf.getRulesetPath() ) ? ""
-                                                                   : "-r "
-                                                                         + conf.getRulesetPath();
+      final SysCommandExecutor executor = SysCommandExecutorFactory.newInstance( resource );
+
       PmdViolationsVO pmdResults = null;
 
       File outPutDirectory;
@@ -72,15 +67,24 @@ public class FlexPMD implements IProcessable< PmdViolationsVO >
       {
          outPutDirectory = FileUtils.createTemporaryDirectory();
 
-         final String command = MessageFormat.format( "{0} -jar {1} -s {4} -o {2} {3}",
-                                                      new Object[]
-                                                      { conf.getJavaVmCommandLine(),
-                                                                  conf.getPmdCommandLinePath(),
-                                                                  outPutDirectory.getAbsolutePath(),
-                                                                  ruleSetPath,
-                                                                  resource.getPath() } ).toString();
-         LOGGER.info( command );
-         executor.runCommand( command );
+         String[] commandLine = new String[]
+         { "java",
+                     conf.getJavaVmCommandLine(),
+                     "-jar",
+                     conf.getPmdCommandLinePath(),
+                     "-s",
+                     resource.getPath(),
+                     "-o",
+                     outPutDirectory.getAbsolutePath() };
+
+         if ( "".equals( conf.getRulesetPath() ) )
+         {
+            commandLine[ commandLine.length - 1 ] = "-r";
+            commandLine[ commandLine.length - 1 ] = conf.getRulesetPath();
+         }
+
+         FlexPMDPlugin.getDefault().logInfo( Arrays.toString( commandLine ) );
+         executor.runCommand( commandLine );
 
          final File reportFile = new File( outPutDirectory.getAbsoluteFile()
                + "/pmd.xml" );
@@ -89,7 +93,8 @@ public class FlexPMD implements IProcessable< PmdViolationsVO >
       }
       catch ( final Exception e )
       {
-         LOGGER.severe( e.getMessage() );
+         FlexPMDPlugin.getDefault().logError( "Error running FlexPMD",
+                                              e );
       }
 
       return pmdResults;

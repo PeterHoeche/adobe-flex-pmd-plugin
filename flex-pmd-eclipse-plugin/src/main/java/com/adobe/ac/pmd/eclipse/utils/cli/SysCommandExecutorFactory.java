@@ -31,16 +31,14 @@
 package com.adobe.ac.pmd.eclipse.utils.cli;
 
 import java.io.File;
-import java.util.logging.Logger;
 
 public class SysCommandExecutorFactory
 {
-   public static SysCommandExecutor newInstance( final File resource,
-                                                 final Logger logger )
+   public static SysCommandExecutor newInstance( final File resource )
    {
       final SysCommandExecutor executor = new SysCommandExecutor();
-      executor.setOutputLogDevice( new InfoLogDevice( logger ) );
-      executor.setErrorLogDevice( new ErrorLogDevice( logger ) );
+      executor.setOutputLogDevice( new InfoLogDevice() );
+      executor.setErrorLogDevice( new ErrorLogDevice() );
 
       final File workingDirectory = resource.isDirectory() ? resource
                                                           : resource.getParentFile();

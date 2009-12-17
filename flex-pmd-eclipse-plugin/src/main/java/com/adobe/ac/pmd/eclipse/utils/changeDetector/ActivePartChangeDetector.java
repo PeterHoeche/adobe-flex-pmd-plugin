@@ -30,8 +30,6 @@
  */
 package com.adobe.ac.pmd.eclipse.utils.changeDetector;
 
-import java.util.logging.Logger;
-
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
@@ -39,10 +37,10 @@ import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartReference;
 
+import com.adobe.ac.pmd.eclipse.FlexPMDPlugin;
+
 public class ActivePartChangeDetector implements IPartListener2
 {
-   private static final Logger               LOGGER = Logger.getLogger( ActivePartChangeDetector.class.getName() );
-
    private final IActiveEditorChangeListener changeListener;
 
    public ActivePartChangeDetector( final IActiveEditorChangeListener changeListener )
@@ -50,11 +48,7 @@ public class ActivePartChangeDetector implements IPartListener2
       this.changeListener = changeListener;
    }
 
-   public void partActivated( final IWorkbenchPartReference arg0 )
-   {
-   }
-
-   public void partBroughtToTop( final IWorkbenchPartReference part )
+   public void partActivated( final IWorkbenchPartReference part )
    {
       final IWorkbenchPage page = part.getPage();
       final IEditorPart editor = page.getActiveEditor();
@@ -63,22 +57,25 @@ public class ActivePartChangeDetector implements IPartListener2
       {
          IEditorInput editorInput = editor.getEditorInput();
 
-         if ( editor instanceof IFileEditorInput )
-         {
-            final IFileEditorInput fileInputEditor = ( IFileEditorInput ) editorInput.getAdapter( IEditorInput.class );
+         final IEditorInput fileInputEditor = ( IEditorInput ) editorInput.getAdapter( IEditorInput.class );
 
-            if ( fileInputEditor != null
-                  && changeListener != null )
+         if ( fileInputEditor instanceof IFileEditorInput )
+         {
+            if ( changeListener != null )
             {
-               changeListener.partBroughtToTop( fileInputEditor.getFile() );
+               changeListener.partBroughtToTop( ( ( IFileEditorInput ) fileInputEditor ).getFile() );
             }
          }
          else
          {
-            LOGGER.info( "part brought to top is not an IFileEditorInput is a  "
+            FlexPMDPlugin.getDefault().logInfo( "part brought to top is not an IFileEditorInput is a  "
                   + editor.getClass().getName() );
          }
       }
+   }
+
+   public void partBroughtToTop( final IWorkbenchPartReference part )
+   {
    }
 
    public void partClosed( final IWorkbenchPartReference part )

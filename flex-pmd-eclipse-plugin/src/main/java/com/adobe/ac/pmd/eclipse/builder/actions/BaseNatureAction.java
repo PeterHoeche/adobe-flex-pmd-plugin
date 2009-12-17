@@ -31,7 +31,6 @@
 package com.adobe.ac.pmd.eclipse.builder.actions;
 
 import java.util.Iterator;
-import java.util.logging.Logger;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -42,13 +41,13 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 
+import com.adobe.ac.pmd.eclipse.FlexPMDPlugin;
 import com.adobe.ac.pmd.eclipse.builder.FlexPMDNature;
 import com.adobe.ac.pmd.eclipse.utils.ResourceUtils;
 
 public abstract class BaseNatureAction implements IObjectActionDelegate
 {
-   private static final Logger LOGGER = Logger.getLogger( BaseNatureAction.class.getName() );
-   private ISelection          selection;
+   private ISelection selection;
 
    private void changeProjectNature( final IProject project )
    {
@@ -66,7 +65,8 @@ public abstract class BaseNatureAction implements IObjectActionDelegate
       }
       catch ( final CoreException e )
       {
-         LOGGER.warning( e.getMessage() );
+         FlexPMDPlugin.getDefault().logError( "Error changing project nature",
+                                              e );
       }
    }
 

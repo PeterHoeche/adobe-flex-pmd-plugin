@@ -42,7 +42,7 @@ public final class FlexPMDPreferences
       final IPreferenceStore preferenceStore = FlexPMDPlugin.getDefault().getPreferenceStore();
 
       return new FlexPMDPreferences( preferenceStore.getString( PreferenceConstants.COMMAND_LINE_PATH ),
-                                     preferenceStore.getString( PreferenceConstants.JAVA_COMMAND_LINE ),
+                                     preferenceStore.getString( PreferenceConstants.JAVA_COMMAND_LINE_ARGUMENTS ),
                                      preferenceStore.getString( PreferenceConstants.RULESET ),
                                      preferenceStore.getString( PreferenceConstants.CPD_COMMAND_LINE_PATH ),
                                      preferenceStore.getString( PreferenceConstants.CPD_MINIMUM_TOKENS ) );

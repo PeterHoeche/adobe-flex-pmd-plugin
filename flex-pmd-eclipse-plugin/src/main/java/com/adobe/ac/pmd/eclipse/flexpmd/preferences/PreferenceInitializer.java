@@ -42,8 +42,8 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer
    {
       final IPreferenceStore preferenceStore = FlexPMDPlugin.getDefault().getPreferenceStore();
 
-      preferenceStore.setDefault( PreferenceConstants.JAVA_COMMAND_LINE,
-                                  "java -Xmx256m" );
+      preferenceStore.setDefault( PreferenceConstants.JAVA_COMMAND_LINE_ARGUMENTS,
+                                  "-Xmx256m" );
 
       preferenceStore.setDefault( PreferenceConstants.CPD_MINIMUM_TOKENS,
                                   25 );

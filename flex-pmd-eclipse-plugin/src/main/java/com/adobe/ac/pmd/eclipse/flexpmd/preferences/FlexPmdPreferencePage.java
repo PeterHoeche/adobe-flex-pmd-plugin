@@ -48,12 +48,12 @@ public class FlexPmdPreferencePage extends FieldEditorPreferencePage implements 
    private static final String CPD_MINIMUM_TOKENS                = "FlexPmdPreferencePage.MinimumTokens";
    private static final String CUSTOM_RULESET_KEY                = "FlexPmdPreferencePage.customRuleset";
    private static final String FIELD_EDITOR_VALUE                = "field_editor_value";
-   private static final String JAVA_COMMAND_LINE_KEY             = "FlexPmdPreferencePage.JavaCommandLine";
+   private static final String JAVA_COMMAND_LINE_ARGUMENTS_KEY   = "FlexPmdPreferencePage.JavaCommandLineArguments";
 
    private FileFieldEditor     cpdInstallationPathField;
    private IntegerFieldEditor  cpdMinimumTokensField;
    private FileFieldEditor     flexPmdInstallationPathField;
-   private StringFieldEditor   javaCommandLineField;
+   private StringFieldEditor   javaCommandLineArgumentsField;
 
    public FlexPmdPreferencePage()
    {
@@ -89,10 +89,10 @@ public class FlexPmdPreferencePage extends FieldEditorPreferencePage implements 
 
    private void addJavaCommandLineField()
    {
-      javaCommandLineField = new StringFieldEditor( PreferenceConstants.JAVA_COMMAND_LINE,
-                                                    MessageUtils.getString( JAVA_COMMAND_LINE_KEY ),
+      javaCommandLineArgumentsField = new StringFieldEditor( PreferenceConstants.JAVA_COMMAND_LINE_ARGUMENTS,
+                                                    MessageUtils.getString( JAVA_COMMAND_LINE_ARGUMENTS_KEY ),
                                                     getFieldEditorParent() );
-      addField( javaCommandLineField );
+      addField( javaCommandLineArgumentsField );
    }
 
    private void addPmdInstallationField()
@@ -127,9 +127,9 @@ public class FlexPmdPreferencePage extends FieldEditorPreferencePage implements 
    {
       if ( event.getProperty().equals( FIELD_EDITOR_VALUE ) )
       {
-         if ( event.getSource() == javaCommandLineField )
+         if ( event.getSource() == javaCommandLineArgumentsField )
          {
-            validate( PreferencesValidator.validateJavaCommandLine( javaCommandLineField.getStringValue() )
+            validate( PreferencesValidator.validateJavaCommandLine( javaCommandLineArgumentsField.getStringValue() )
                                           .getKey(),
                       event );
          }

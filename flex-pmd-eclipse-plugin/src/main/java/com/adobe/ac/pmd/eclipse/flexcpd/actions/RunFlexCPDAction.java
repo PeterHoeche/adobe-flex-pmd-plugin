@@ -30,8 +30,6 @@
  */
 package com.adobe.ac.pmd.eclipse.flexcpd.actions;
 
-import java.util.logging.Logger;
-
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IAction;
@@ -51,33 +49,25 @@ import com.adobe.ac.pmd.eclipse.utils.FileUtils;
 
 public class RunFlexCPDAction implements IObjectActionDelegate
 {
-   private static final Logger  LOGGER = Logger.getLogger( RunFlexCPDAction.class.getName() );
    private IStructuredSelection selection;
 
    public void run( final IAction action )
    {
       if ( selection != null )
       {
-         try
+         final RunFlexCPDJob job = new RunFlexCPDJob( FileUtils.extractResourceFromSelection( selection.getFirstElement() ) );
+         job.addJobChangeListener( new JobChangeAdapter()
          {
-            final RunFlexCPDJob job = new RunFlexCPDJob( FileUtils.extractResourceFromSelection( selection.getFirstElement() ) );
-            job.addJobChangeListener( new JobChangeAdapter()
+            @Override
+            public void done( final IJobChangeEvent event )
             {
-               @Override
-               public void done( final IJobChangeEvent event )
+               if ( event.getResult().isOK() )
                {
-                  if ( event.getResult().isOK() )
-                  {
-                     updateUIWithPMDResults( job.getProcessResult() );
-                  }
+                  updateUIWithPMDResults( job.getProcessResult() );
                }
-            } );
-            job.schedule();
-         }
-         catch ( final Exception e )
-         {
-            LOGGER.warning( e.toString() );
-         }
+            }
+         } );
+         job.schedule();
       }
    }
 

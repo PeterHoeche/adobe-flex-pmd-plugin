@@ -30,8 +30,6 @@
  */
 package com.adobe.ac.pmd.eclipse.flexpmd.actions;
 
-import java.util.logging.Logger;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -48,6 +46,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import com.adobe.ac.pmd.eclipse.FlexPMDPlugin;
 import com.adobe.ac.pmd.eclipse.flexpmd.FlexPMDKeys;
 import com.adobe.ac.pmd.eclipse.flexpmd.cmd.data.PmdViolationsVO;
 import com.adobe.ac.pmd.eclipse.flexpmd.utils.FlexPMDMarkerUtils;
@@ -57,8 +56,6 @@ import com.adobe.ac.pmd.eclipse.utils.MessageUtils;
 
 public class RunFlexPmdAction extends AbstractHandler implements IActionDelegate
 {
-   public static final Logger   LOGGER = Logger.getLogger( RunFlexPmdAction.class.getName() );
-
    private IStructuredSelection selection;
 
    private void activateFlexPMDView( final PmdViolationsVO violations )
@@ -75,7 +72,8 @@ public class RunFlexPmdAction extends AbstractHandler implements IActionDelegate
       }
       catch ( final PartInitException e )
       {
-         LOGGER.warning( e.getMessage() );
+         FlexPMDPlugin.getDefault().logError( "Error activating FlexPMDView",
+                                              e );
       }
    }
 
@@ -102,30 +100,24 @@ public class RunFlexPmdAction extends AbstractHandler implements IActionDelegate
    {
       if ( selection == null )
       {
-         new NotifyErrorAction( MessageUtils.getString( FlexPMDKeys.NO_SELECTED_RESOURCE ) ).run();
+         FlexPMDPlugin.getDefault().showError( MessageUtils.getString( FlexPMDKeys.NO_SELECTED_RESOURCE ),
+                                               null );
       }
       else
       {
-         try
+         final RunFlexPMDJob job = new RunFlexPMDJob( FileUtils.extractResourceFromSelection( selection.getFirstElement() ) );
+         job.addJobChangeListener( new JobChangeAdapter()
          {
-            final RunFlexPMDJob job = new RunFlexPMDJob( FileUtils.extractResourceFromSelection( selection.getFirstElement() ) );
-            job.addJobChangeListener( new JobChangeAdapter()
+            @Override
+            public void done( final IJobChangeEvent event )
             {
-               @Override
-               public void done( final IJobChangeEvent event )
+               if ( event.getResult().isOK() )
                {
-                  if ( event.getResult().isOK() )
-                  {
-                     updateUIWithPMDResults( job.getProcessResult() );
-                  }
+                  updateUIWithPMDResults( job.getProcessResult() );
                }
-            } );
-            job.schedule();
-         }
-         catch ( final Exception e )
-         {
-            LOGGER.warning( e.toString() );
-         }
+            }
+         } );
+         job.schedule();
       }
    }
 
