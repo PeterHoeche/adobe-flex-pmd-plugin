@@ -36,7 +36,6 @@ public class InfoLogDevice implements ILogDevice
 {
    public void log( final String str )
    {
-      FlexPMDPlugin.getDefault().logError( str,
-                                           null );
+      FlexPMDPlugin.getDefault().logInfo( str );
    }
 }

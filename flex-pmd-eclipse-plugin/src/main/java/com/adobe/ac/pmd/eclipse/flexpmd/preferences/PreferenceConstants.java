@@ -32,11 +32,11 @@ package com.adobe.ac.pmd.eclipse.flexpmd.preferences;
 
 public final class PreferenceConstants
 {
-   public static final String COMMAND_LINE_PATH           = "commandLine";
-   public static final String CPD_COMMAND_LINE_PATH       = "cpdCommandLinePath";
-   public static final String CPD_MINIMUM_TOKENS          = "minimumTokens";
-   public static final String JAVA_COMMAND_LINE_ARGUMENTS = "javaVmMemory";
-   public static final String RULESET                     = "ruleset";
+   public static final String COMMAND_LINE_INSTALLATION_PATH = "commandLine";
+   public static final String CPD_MINIMUM_TOKENS             = "minimumTokens";
+   public static final String JAVA_COMMAND_LINE_ARGUMENTS    = "javaVmMemory";
+   public static final String RULESET                        = "ruleset";
+   public static final String USE_BUNDLED_FLEXPMD            = "useBundledFlexPMD";
 
    private PreferenceConstants()
    {

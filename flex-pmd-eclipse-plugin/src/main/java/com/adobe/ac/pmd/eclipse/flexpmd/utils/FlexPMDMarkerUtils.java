@@ -30,6 +30,7 @@
  */
 package com.adobe.ac.pmd.eclipse.flexpmd.utils;
 
+import java.io.File;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -57,7 +58,7 @@ import com.adobe.ac.pmd.eclipse.flexpmd.cmd.data.ViolationVO;
 
 public class FlexPMDMarkerUtils
 {
-   private static final String MARKER_TYPE = "com.adobe.ac.pmd.eclipse.FlexPMDProblem";
+   public static final String MARKER_TYPE = "com.adobe.ac.pmd.eclipse.FlexPMDProblem";
 
    private static final void addMarker( final IFile file,
                                         final String message,
@@ -111,57 +112,73 @@ public class FlexPMDMarkerUtils
       return rule;
    }
 
-   public static final void addMarkers( final PmdViolationsVO violations )
+   public static final Job addMarkers( final PmdViolationsVO violations )
    {
-      // && violations.getFilesInViolation().size() > 0
+      Job job = null;
+
       if ( violations != null )
       {
-         final Job job = new Job( "add markers job" )
+         job = new Job( "add markers job" )
          {
             @Override
             protected IStatus run( IProgressMonitor monitor )
             {
-               final IWorkspaceRunnable action = new IWorkspaceRunnable()
-               {
-                  public void run( IProgressMonitor monitor ) throws CoreException
-                  {
-                     final List< FlexPmdFileVO > violatedFiles = violations.getFilesInViolation();
-                     monitor.beginTask( "PMD Applying markers",
-                                        violatedFiles.size() );
-
-                     for ( final FlexPmdFileVO flexPmdFile : violatedFiles )
-                     {
-                        addMarkers( flexPmdFile );
-                        monitor.worked( 1 );
-                     }
-                  }
-               };
-
+               final List< FlexPmdFileVO > filesInViolation = violations.getFilesInViolation();
                final IWorkspace workspace = ResourcesPlugin.getWorkspace();
 
-               IFile file = getFile( violations.getFilesInViolation().get( 0 ) );
-               try
+               if ( filesInViolation.size() > 0 )
                {
-                  workspace.run( action,
-                                 getschedulingRule( file ),
-                                 IWorkspace.AVOID_UPDATE,
-                                 monitor );
-               }
-               catch ( CoreException e )
-               {
-                  e.printStackTrace();
+                  IFile file = getFile( filesInViolation.get( 0 ) );
+
+                  final IWorkspaceRunnable action = new IWorkspaceRunnable()
+                  {
+                     public void run( IProgressMonitor monitor ) throws CoreException
+                     {
+                        final List< FlexPmdFileVO > violatedFiles = filesInViolation;
+                        monitor.beginTask( "PMD Applying markers",
+                                           violatedFiles.size() );
+
+                        for ( final FlexPmdFileVO flexPmdFile : violatedFiles )
+                        {
+                           addMarkers( flexPmdFile );
+                           monitor.worked( 1 );
+                        }
+                     }
+                  };
+
+                  try
+                  {
+                     workspace.run( action,
+                                    getschedulingRule( file ),
+                                    IWorkspace.AVOID_UPDATE,
+                                    monitor );
+                  }
+                  catch ( CoreException e )
+                  {
+                     e.printStackTrace();
+                  }
                }
 
                return Status.OK_STATUS;
             }
          };
-         job.schedule();
       }
+
+      return job;
    }
 
    private static void cleanMarkers( final FlexPmdFileVO flexPmdFile )
    {
       cleanMarkers( getFile( flexPmdFile ) );
+   }
+
+   public static final void cleanMarkers( final File file )
+   {
+      final IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
+      final IPath location = new Path( file.getPath() );
+      final IFile ifile = workspaceRoot.getFileForLocation( location );
+
+      cleanMarkers( ifile );
    }
 
    public static final void cleanMarkers( final IFile file )

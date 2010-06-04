@@ -70,11 +70,23 @@ public class FlexPMDPlugin extends AbstractUIPlugin
       super.stop( context );
    }
 
+   public void logError( String message )
+   {
+      getLog().log( new Status( IStatus.ERROR, getBundle().getSymbolicName(), message ) );
+   }
+
    public void logError( String message,
                          Throwable error )
    {
-      getLog().log( new Status( IStatus.ERROR, getBundle().getSymbolicName(), 0, message
-            + error.getMessage(), error ) );
+      if ( error == null )
+      {
+         logError( message );
+      }
+      else
+      {
+         getLog().log( new Status( IStatus.ERROR, getBundle().getSymbolicName(), 0, message
+               + error.getMessage(), error ) );
+      }
    }
 
    public void logWarning( String message,

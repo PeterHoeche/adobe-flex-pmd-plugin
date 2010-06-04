@@ -42,6 +42,7 @@ import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 
 import com.adobe.ac.pmd.eclipse.FlexPMDPlugin;
 import com.adobe.ac.pmd.eclipse.flexpmd.cmd.FlexPMD;
@@ -149,6 +150,7 @@ public class FlexPMDBuilder extends IncrementalProjectBuilder
 
    protected void fullBuild( final IProgressMonitor monitor ) throws CoreException
    {
+
       getProject().accept( new FullBuildVisitor() );
    }
 
@@ -164,8 +166,11 @@ public class FlexPMDBuilder extends IncrementalProjectBuilder
 
       try
       {
+         FlexPMDMarkerUtils.cleanMarkers( resource );
+
          results = flexPMD.process( resource );
-         FlexPMDMarkerUtils.addMarkers( results );
+         Job job = FlexPMDMarkerUtils.addMarkers( results );
+         job.schedule();
       }
       catch ( final FlexPmdExecutionException e )
       {

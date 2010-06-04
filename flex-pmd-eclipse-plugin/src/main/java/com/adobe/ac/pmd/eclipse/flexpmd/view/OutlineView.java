@@ -146,6 +146,7 @@ public class OutlineView extends ViewPart
          }
       }
    }
+
    public static final String         ID = "com.adobe.ac.pmd.eclipse.flexpmd.view.OutlineView";
    private ActivePartChangeDetector   changeDetector;
    private IMarker[]                  markers;

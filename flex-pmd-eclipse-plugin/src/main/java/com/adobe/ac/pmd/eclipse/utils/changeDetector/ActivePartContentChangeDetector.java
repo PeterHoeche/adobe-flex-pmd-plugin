@@ -31,9 +31,11 @@
 package com.adobe.ac.pmd.eclipse.utils.changeDetector;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.ui.IEditorInput;
@@ -44,41 +46,82 @@ import org.eclipse.ui.IPartService;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartReference;
 
+import com.adobe.ac.pmd.eclipse.flexpmd.utils.FlexPMDMarkerUtils;
+
 public class ActivePartContentChangeDetector implements IPartListener2
 {
    private class ResourceChangeListener implements IResourceChangeListener
    {
-      private boolean activeEditorHasChanged( final IResourceChangeEvent event )
-      {
-         final IResourceDelta docDelta = event.getDelta().findMember( activeEditorPath );
-
-         return docDelta == null ? false
-                                : true;
-      }
-
       private boolean isPostChangeEvent( final IResourceChangeEvent event )
       {
          return event.getType() == IResourceChangeEvent.POST_CHANGE;
       }
 
+      private boolean isAutoBuilding( final IResourceChangeEvent event )
+      {
+         boolean building = false;
+
+         if ( event.getSource() instanceof IWorkspace )
+         {
+            IWorkspace workspace = ( IWorkspace ) event.getSource();
+            building = workspace.isAutoBuilding();
+         }
+
+         return building;
+      }
+
+      private boolean activeEditorContentHasChanged( final IResourceChangeEvent event )
+      {
+         final IResourceDelta docDelta = event.getDelta().findMember( activeEditorPath );
+
+         int contentModified = docDelta.getFlags()
+               & IResourceDelta.CONTENT;
+
+         return contentModified == 0 ? false
+                                    : true;
+      }
+
+      private boolean activeEditorMarkersHaveChanged( final IResourceChangeEvent event )
+      {
+         final IMarkerDelta[] docDelta = event.findMarkerDeltas( FlexPMDMarkerUtils.MARKER_TYPE,
+                                                                 false );
+
+         return docDelta.length == 0 ? false
+                                    : true;
+      }
+
       public void resourceChanged( final IResourceChangeEvent event )
       {
-         if ( isPostChangeEvent( event )
-               && activeEditorHasChanged( event ) )
+         /**
+          * isPostChangeEvent activeEditorPath kind == CHANGED flag ==
+          * IResourceDelta.CONTENT && !isAutoBuilding >> notifyPartChanged flag
+          * == IResourceDelta.MARKERS >> notifyPartMarkersChanged
+          **/
+
+         if ( isPostChangeEvent( event ) )
          {
-            notifyActivePartChange();
+            if ( !isAutoBuilding( event )
+                  && activeEditorContentHasChanged( event ) )
+            {
+               notifyActivePartContentChange();
+            }
+            else if ( activeEditorMarkersHaveChanged( event ) )
+            {
+               notifyActivePartMarkersChange();
+            }
          }
+
       }
    }
 
-   private IPath                                    activeEditorPath;
-   private IFile                                    activeFile;
-   private final IActiveEditorContentChangeListener changeListener;
-   private final IPartService                       partService;
-   private final ResourceChangeListener             resourceListener;
+   private IPath                                activeEditorPath;
+   private IFile                                activeFile;
+   private final IActivePmdEditorChangeListener changeListener;
+   private final IPartService                   partService;
+   private final ResourceChangeListener         resourceListener;
 
    public ActivePartContentChangeDetector( final IPartService iPartService,
-                                           final IActiveEditorContentChangeListener changeListener )
+                                           final IActivePmdEditorChangeListener changeListener )
    {
       resourceListener = new ResourceChangeListener();
       partService = iPartService;
@@ -97,11 +140,19 @@ public class ActivePartContentChangeDetector implements IPartListener2
       partService.addPartListener( this );
    }
 
-   private void notifyActivePartChange()
+   private void notifyActivePartContentChange()
    {
       if ( changeListener != null )
       {
          changeListener.activePartContentChange( activeFile );
+      }
+   }
+
+   private void notifyActivePartMarkersChange()
+   {
+      if ( changeListener != null )
+      {
+         changeListener.activePartMarkersChange( activeFile );
       }
    }
 

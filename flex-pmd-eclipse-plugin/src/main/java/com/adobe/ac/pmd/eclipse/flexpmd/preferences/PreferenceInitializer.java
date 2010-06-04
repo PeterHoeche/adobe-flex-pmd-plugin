@@ -30,22 +30,56 @@
  */
 package com.adobe.ac.pmd.eclipse.flexpmd.preferences;
 
+import java.io.IOException;
+import java.net.URL;
+
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.osgi.framework.Bundle;
 
 import com.adobe.ac.pmd.eclipse.FlexPMDPlugin;
 
 public class PreferenceInitializer extends AbstractPreferenceInitializer
 {
+
    @Override
    public void initializeDefaultPreferences()
    {
       final IPreferenceStore preferenceStore = FlexPMDPlugin.getDefault().getPreferenceStore();
+
+      preferenceStore.setDefault( PreferenceConstants.USE_BUNDLED_FLEXPMD,
+                                  true );
+
+      preferenceStore.setDefault( PreferenceConstants.COMMAND_LINE_INSTALLATION_PATH,
+                                  getDefaultPmdRuntimeLocation() );
 
       preferenceStore.setDefault( PreferenceConstants.JAVA_COMMAND_LINE_ARGUMENTS,
                                   "-Xmx256m" );
 
       preferenceStore.setDefault( PreferenceConstants.CPD_MINIMUM_TOKENS,
                                   25 );
+   }
+
+   private String getDefaultPmdRuntimeLocation()
+   {
+      Bundle bundle = FlexPMDPlugin.getDefault().getBundle();
+      URL flexPmdDefaultPath = FileLocator.find( bundle,
+                                                 new Path( "/flexPmdRuntime" ),
+                                                 null );
+
+      try
+      {
+         flexPmdDefaultPath = FileLocator.toFileURL( flexPmdDefaultPath );
+      }
+      catch ( IOException e )
+      {
+         FlexPMDPlugin.getDefault()
+                      .logError( "Problem accessing default FlexPMD runtime installation folder.",
+                                 e );
+      }
+
+      return flexPmdDefaultPath.getPath();
    }
 }

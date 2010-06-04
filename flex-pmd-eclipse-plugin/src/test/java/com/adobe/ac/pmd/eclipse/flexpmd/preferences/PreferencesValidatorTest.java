@@ -42,12 +42,9 @@ public class PreferencesValidatorTest
    {
       assertEquals( PreferencesValidator.PmdInstallationValid.VALID,
                     PreferencesValidator.validateFlexPmdInstallation( "/Users/xagnetti/Work/repositories/opensource.adobe/flexpmd/trunk/flex-pmd-command-line/target/release/flex-pmd-command-line-1.0.RC4-SNAPSHOT.jar" ) );
-      assertEquals( PreferencesValidator.PmdInstallationValid.NOT_COMMAND_LINE,
+      assertEquals( PreferencesValidator.PmdInstallationValid.NOT_FLEXPMD_INSTALLACTION_FOLDER,
                     PreferencesValidator.validateFlexPmdInstallation( "/Users/xagnetti/Work/repositories/opensource.adobe/flexpmd/trunk/flex-pmd-command-line/target/release/flex-pmd-ruleset-1.0.RC4-SNAPSHOT.jar" ) );
-      assertEquals( PreferencesValidator.PmdInstallationValid.NOT_JAVA,
-                    PreferencesValidator.validateFlexPmdInstallation( "/Applications/flex-pmd/" ) );
-      assertEquals( PreferencesValidator.PmdInstallationValid.NOT_JAVA,
-                    PreferencesValidator.validateFlexPmdInstallation( "frgergre" ) );
+
       assertEquals( PreferencesValidator.PmdInstallationValid.EMPTY,
                     PreferencesValidator.validateFlexPmdInstallation( "" ) );
       assertEquals( PreferencesValidator.PmdInstallationValid.EMPTY,
@@ -57,15 +54,5 @@ public class PreferencesValidatorTest
    @Test
    public void testValidateJavaCommandLine()
    {
-      assertEquals( PreferencesValidator.JavaVmValid.VALID,
-                    PreferencesValidator.validateJavaCommandLine( "java -Xmx256m" ) );
-      assertEquals( PreferencesValidator.JavaVmValid.NO_JVM,
-                    PreferencesValidator.validateJavaCommandLine( "-Xmx256m" ) );
-      assertEquals( PreferencesValidator.JavaVmValid.NO_JVM,
-                    PreferencesValidator.validateJavaCommandLine( "jav -Xmx256m" ) );
-      assertEquals( PreferencesValidator.JavaVmValid.EMPTY,
-                    PreferencesValidator.validateJavaCommandLine( "" ) );
-      assertEquals( PreferencesValidator.JavaVmValid.EMPTY,
-                    PreferencesValidator.validateJavaCommandLine( null ) );
    }
 }

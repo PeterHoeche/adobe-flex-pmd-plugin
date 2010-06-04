@@ -68,44 +68,19 @@ public class SysCommandExecutor
 {
    private static class AsyncStreamReader extends Thread
    {
-      private final StringBuffer fBuffer;
-      private final InputStream  fInputStream;
-      private final ILogDevice   fLogDevice;
-      private final String       fNewLine;
-      private boolean            fStop;
+      private static final String NEW_LINE = System.getProperty( "line.separator" );
 
-      public AsyncStreamReader( final InputStream inputStream,
-                                final StringBuffer buffer,
-                                final ILogDevice logDevice )
+      private final StringBuffer  fBuffer;
+      private final InputStream   fInputStream;
+      private boolean             fStop;
+
+      public AsyncStreamReader( final InputStream inputStream )
       {
          super();
+
+         fBuffer = new StringBuffer();
          fInputStream = inputStream;
-         fBuffer = buffer;
-         fLogDevice = logDevice;
-         fNewLine = System.getProperty( "line.separator" );
          fStop = false;
-      }
-
-      private void printToDisplayDevice( final String line )
-      {
-         if ( fLogDevice != null )
-         {
-            fLogDevice.log( line );
-         }
-      }
-
-      private void readCommandOutput() throws IOException
-      {
-         final BufferedReader bufOut = new BufferedReader( new InputStreamReader( fInputStream ) );
-         String line = null;
-         while ( !fStop
-               && ( line = bufOut.readLine() ) != null )
-         {
-            fBuffer.append( line );
-            fBuffer.append( fNewLine );
-            printToDisplayDevice( line );
-         }
-         bufOut.close();
       }
 
       @Override
@@ -120,34 +95,52 @@ public class SysCommandExecutor
          }
       }
 
+      private void readCommandOutput() throws IOException
+      {
+         final BufferedReader bufOut = new BufferedReader( new InputStreamReader( fInputStream ) );
+         String line = null;
+
+         while ( !fStop
+               && ( line = bufOut.readLine() ) != null )
+         {
+            fBuffer.append( line );
+            fBuffer.append( NEW_LINE );
+         }
+
+         bufOut.close();
+      }
+
       public void stopReading()
       {
          fStop = true;
       }
+
+      @Override
+      public String toString()
+      {
+         return fBuffer.toString();
+      }
    }
 
-   private StringBuffer      fCmdError         = null;
    private AsyncStreamReader fCmdErrorThread   = null;
-   private StringBuffer      fCmdOutput        = null;
    private AsyncStreamReader fCmdOutputThread  = null;
    private ILogDevice        fErrorLogDevice   = null;
    private ILogDevice        fOuputLogDevice   = null;
    private String            fWorkingDirectory = null;
 
-   public String getCommandError()
+   public void setErrorLogDevice( final ILogDevice logDevice )
    {
-      return fCmdError.toString();
+      fErrorLogDevice = logDevice;
    }
 
-   public String getCommandOutput()
+   public void setOutputLogDevice( final ILogDevice logDevice )
    {
-      return fCmdOutput.toString();
+      fOuputLogDevice = logDevice;
    }
 
-   private void notifyOutputAndErrorReadThreadsToStopReading()
+   public void setWorkingDirectory( final String workingDirectory )
    {
-      fCmdOutputThread.stopReading();
-      fCmdErrorThread.stopReading();
+      fWorkingDirectory = workingDirectory;
    }
 
    public int runCommand( final String[] commandLine ) throws Exception
@@ -157,6 +150,7 @@ public class SysCommandExecutor
       startOutputAndErrorReadThreads( process.getInputStream(),
                                       process.getErrorStream() );
       int exitStatus = -1;
+
       try
       {
          exitStatus = process.waitFor();
@@ -169,6 +163,17 @@ public class SysCommandExecutor
       finally
       {
          notifyOutputAndErrorReadThreadsToStopReading();
+      }
+
+      if ( exitStatus == 0 )
+      {
+         // NOTE: All process messages are written to stdErr and not to stdOut
+         // this is why we read getCommandError instead of getCommandOutput
+         fOuputLogDevice.log( getCommandError() );
+      }
+      else
+      {
+         fErrorLogDevice.log( getCommandError() );
       }
 
       return exitStatus;
@@ -194,30 +199,29 @@ public class SysCommandExecutor
       return process;
    }
 
-   public void setErrorLogDevice( final ILogDevice logDevice )
-   {
-      fErrorLogDevice = logDevice;
-   }
-
-   public void setOutputLogDevice( final ILogDevice logDevice )
-   {
-      fOuputLogDevice = logDevice;
-   }
-
-   public void setWorkingDirectory( final String workingDirectory )
-   {
-      fWorkingDirectory = workingDirectory;
-   }
-
    private void startOutputAndErrorReadThreads( final InputStream processOut,
                                                 final InputStream processErr )
    {
-      fCmdOutput = new StringBuffer();
-      fCmdOutputThread = new AsyncStreamReader( processOut, fCmdOutput, fOuputLogDevice );
+      fCmdOutputThread = new AsyncStreamReader( processOut );
       fCmdOutputThread.start();
 
-      fCmdError = new StringBuffer();
-      fCmdErrorThread = new AsyncStreamReader( processErr, fCmdError, fErrorLogDevice );
+      fCmdErrorThread = new AsyncStreamReader( processErr );
       fCmdErrorThread.start();
+   }
+
+   private void notifyOutputAndErrorReadThreadsToStopReading()
+   {
+      fCmdOutputThread.stopReading();
+      fCmdErrorThread.stopReading();
+   }
+
+   public String getCommandError()
+   {
+      return fCmdErrorThread.toString();
+   }
+
+   public String getCommandOutput()
+   {
+      return fCmdOutputThread.toString();
    }
 }

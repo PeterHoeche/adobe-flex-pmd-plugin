@@ -34,6 +34,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
@@ -140,7 +141,8 @@ public class RunFlexPmdAction extends AbstractHandler implements IActionDelegate
       {
          public void run()
          {
-            FlexPMDMarkerUtils.addMarkers( violations );
+            Job job = FlexPMDMarkerUtils.addMarkers( violations );
+            job.schedule();
             activateFlexPMDView( violations );
          }
       } );

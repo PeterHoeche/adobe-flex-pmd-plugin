@@ -30,6 +30,8 @@
  */
 package com.adobe.ac.pmd.eclipse.flexpmd.preferences;
 
+import org.eclipse.jface.preference.BooleanFieldEditor;
+import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.FileFieldEditor;
 import org.eclipse.jface.preference.IntegerFieldEditor;
@@ -43,17 +45,17 @@ import com.adobe.ac.pmd.eclipse.utils.MessageUtils;
 
 public class FlexPmdPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage
 {
-   private static final String COMMAND_LINE_INSTALLATION_KEY     = "FlexPmdPreferencePage.FlexPmdCommandLineInstallation";
-   private static final String CPD_COMMAND_LINE_INSTALLATION_KEY = "FlexPmdPreferencePage.FlexCpdCommandLineInstallation";
-   private static final String CPD_MINIMUM_TOKENS                = "FlexPmdPreferencePage.MinimumTokens";
-   private static final String CUSTOM_RULESET_KEY                = "FlexPmdPreferencePage.customRuleset";
-   private static final String FIELD_EDITOR_VALUE                = "field_editor_value";
-   private static final String JAVA_COMMAND_LINE_ARGUMENTS_KEY   = "FlexPmdPreferencePage.JavaCommandLineArguments";
+   private static final String  COMMAND_LINE_INSTALLATION_KEY   = "FlexPmdPreferencePage.FlexPmdCommandLineInstallation";
+   private static final String  CPD_MINIMUM_TOKENS              = "FlexPmdPreferencePage.MinimumTokens";
+   private static final String  CUSTOM_RULESET_KEY              = "FlexPmdPreferencePage.customRuleset";
+   private static final String  JAVA_COMMAND_LINE_ARGUMENTS_KEY = "FlexPmdPreferencePage.JavaCommandLineArguments";
+   private static final String  USE_BUNDLED_RUNTIME             = "FlexPmdPreferencePage.useBundledRuntime";
+   private static final String  FIELD_EDITOR_VALUE              = "field_editor_value";
 
-   private FileFieldEditor     cpdInstallationPathField;
-   private IntegerFieldEditor  cpdMinimumTokensField;
-   private FileFieldEditor     flexPmdInstallationPathField;
-   private StringFieldEditor   javaCommandLineArgumentsField;
+   private IntegerFieldEditor   cpdMinimumTokensField;
+   private DirectoryFieldEditor flexPmdInstallationPathField;
+   private StringFieldEditor    javaCommandLineArgumentsField;
+   private BooleanFieldEditor   useBundledFlexPmdCheckBox;
 
    public FlexPmdPreferencePage()
    {
@@ -61,20 +63,35 @@ public class FlexPmdPreferencePage extends FieldEditorPreferencePage implements 
       setPreferenceStore( FlexPMDPlugin.getDefault().getPreferenceStore() );
    }
 
-   private void addCpdInstallationField()
+   @Override
+   public void createFieldEditors()
    {
-      cpdInstallationPathField = new FileFieldEditor( PreferenceConstants.CPD_COMMAND_LINE_PATH,
-                                                      MessageUtils.getString( CPD_COMMAND_LINE_INSTALLATION_KEY ),
-                                                      getFieldEditorParent() );
-      addField( cpdInstallationPathField );
+      addPmdInstallationField();
+      addCustomRulesetField();
+      addCpdTokensField();
    }
 
-   private void addCpdTokensField()
+   public void init( final IWorkbench workbench )
    {
-      cpdMinimumTokensField = new IntegerFieldEditor( PreferenceConstants.CPD_MINIMUM_TOKENS,
-                                                      MessageUtils.getString( CPD_MINIMUM_TOKENS ),
-                                                      getFieldEditorParent() );
-      addField( cpdMinimumTokensField );
+   }
+
+   private void addPmdInstallationField()
+   {
+      useBundledFlexPmdCheckBox = new BooleanFieldEditor( PreferenceConstants.USE_BUNDLED_FLEXPMD,
+                                                          MessageUtils.getString( USE_BUNDLED_RUNTIME ),
+                                                          getFieldEditorParent() );
+
+      flexPmdInstallationPathField = new DirectoryFieldEditor( PreferenceConstants.COMMAND_LINE_INSTALLATION_PATH,
+                                                               MessageUtils.getString( COMMAND_LINE_INSTALLATION_KEY ),
+                                                               getFieldEditorParent() );
+
+      javaCommandLineArgumentsField = new StringFieldEditor( PreferenceConstants.JAVA_COMMAND_LINE_ARGUMENTS,
+                                                             MessageUtils.getString( JAVA_COMMAND_LINE_ARGUMENTS_KEY ),
+                                                             getFieldEditorParent() );
+
+      addField( useBundledFlexPmdCheckBox );
+      addField( flexPmdInstallationPathField );
+      addField( javaCommandLineArgumentsField );
    }
 
    private void addCustomRulesetField()
@@ -87,74 +104,56 @@ public class FlexPmdPreferencePage extends FieldEditorPreferencePage implements 
       addField( customRuleSetField );
    }
 
-   private void addJavaCommandLineField()
+   private void addCpdTokensField()
    {
-      javaCommandLineArgumentsField = new StringFieldEditor( PreferenceConstants.JAVA_COMMAND_LINE_ARGUMENTS,
-                                                    MessageUtils.getString( JAVA_COMMAND_LINE_ARGUMENTS_KEY ),
-                                                    getFieldEditorParent() );
-      addField( javaCommandLineArgumentsField );
+      cpdMinimumTokensField = new IntegerFieldEditor( PreferenceConstants.CPD_MINIMUM_TOKENS,
+                                                      MessageUtils.getString( CPD_MINIMUM_TOKENS ),
+                                                      getFieldEditorParent() );
+      addField( cpdMinimumTokensField );
    }
 
-   private void addPmdInstallationField()
+   protected void initialize()
    {
-      flexPmdInstallationPathField = new FileFieldEditor( PreferenceConstants.COMMAND_LINE_PATH,
-                                                          MessageUtils.getString( COMMAND_LINE_INSTALLATION_KEY ),
-                                                          getFieldEditorParent() );
+      super.initialize();
 
-      flexPmdInstallationPathField.setFileExtensions( new String[]
-      { "*.jar" } );
-
-      addField( flexPmdInstallationPathField );
-   }
-
-   @Override
-   public void createFieldEditors()
-   {
-      addPmdInstallationField();
-      addCustomRulesetField();
-      addJavaCommandLineField();
-      addCpdInstallationField();
-      addCpdTokensField();
-
-   }
-
-   public void init( final IWorkbench workbench )
-   {
+      Boolean useBundledFlexPmd = getPreferenceStore().getBoolean( PreferenceConstants.USE_BUNDLED_FLEXPMD );
+      flexPmdInstallationPathField.setEnabled( !useBundledFlexPmd,
+                                               getFieldEditorParent() );
    }
 
    @Override
    public void propertyChange( final PropertyChangeEvent event )
    {
-      if ( event.getProperty().equals( FIELD_EDITOR_VALUE ) )
+      if ( FIELD_EDITOR_VALUE.equals( event.getProperty() ) )
       {
-         if ( event.getSource() == javaCommandLineArgumentsField )
+         Object propertySource = event.getSource();
+
+         if ( propertySource == useBundledFlexPmdCheckBox )
          {
-            validate( PreferencesValidator.validateJavaCommandLine( javaCommandLineArgumentsField.getStringValue() )
-                                          .getKey(),
+            Boolean useBundledFlexPmd = ( Boolean ) event.getNewValue();
+
+            if ( useBundledFlexPmd )
+            {
+               flexPmdInstallationPathField.loadDefault();
+            }
+
+            flexPmdInstallationPathField.setEnabled( !useBundledFlexPmd,
+                                                     getFieldEditorParent() );
+
+         }
+         else if ( propertySource == flexPmdInstallationPathField )
+         {
+            String pmdNewInstallation = ( String ) event.getNewValue();
+            validate( PreferencesValidator.validateFlexPmdInstallation( pmdNewInstallation ).getKey(),
                       event );
          }
-
-         if ( event.getSource() == flexPmdInstallationPathField )
-         {
-            validate( PreferencesValidator.validateFlexPmdInstallation( flexPmdInstallationPathField.getStringValue() )
-                                          .getKey(),
-                      event );
-         }
-
-         if ( event.getSource() == cpdInstallationPathField )
-         {
-            validate( PreferencesValidator.validateFlexPmdInstallation( cpdInstallationPathField.getStringValue() )
-                                          .getKey(),
-                      event );
-         }
-
-         if ( event.getSource() == cpdMinimumTokensField )
+         else if ( propertySource == cpdMinimumTokensField )
          {
             setValid( true );
             setErrorMessage( null );
-            super.propertyChange( event );
          }
       }
+      super.propertyChange( event );
    }
 
    private void validate( final String errorMessageKey,

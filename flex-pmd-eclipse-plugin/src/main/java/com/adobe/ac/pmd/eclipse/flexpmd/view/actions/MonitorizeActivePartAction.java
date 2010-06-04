@@ -32,6 +32,7 @@ package com.adobe.ac.pmd.eclipse.flexpmd.view.actions;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -47,17 +48,12 @@ import com.adobe.ac.pmd.eclipse.flexpmd.utils.FlexPMDMarkerUtils;
 import com.adobe.ac.pmd.eclipse.flexpmd.view.OutlineView;
 import com.adobe.ac.pmd.eclipse.utils.FileUtils;
 import com.adobe.ac.pmd.eclipse.utils.changeDetector.ActivePartContentChangeDetector;
-import com.adobe.ac.pmd.eclipse.utils.changeDetector.IActiveEditorContentChangeListener;
+import com.adobe.ac.pmd.eclipse.utils.changeDetector.IActivePmdEditorChangeListener;
 
-public class MonitorizeActivePartAction extends Action implements IActiveEditorContentChangeListener
+public class MonitorizeActivePartAction extends Action implements IActivePmdEditorChangeListener
 {
    private ActivePartContentChangeDetector changeDetector;
-   private boolean                         updatingMarkers;
    private OutlineView                     view;
-
-   public MonitorizeActivePartAction()
-   {
-   }
 
    public MonitorizeActivePartAction( final OutlineView outlineView )
    {
@@ -75,11 +71,23 @@ public class MonitorizeActivePartAction extends Action implements IActiveEditorC
 
    }
 
+   public void activePartMarkersChange( final IFile file )
+   {
+      Display.getDefault().asyncExec( new Runnable()
+      {
+         public void run()
+         {
+            view.loadMarkers( FlexPMDMarkerUtils.getMarkers( file ) );
+         }
+      } );
+   }
+
    public void activePartContentChange( final IFile file )
    {
-      if ( !updatingMarkers
-            && FileUtils.isFlexFile( file.getLocation().getFileExtension() ) )
+      if ( FileUtils.isFlexFile( file.getLocation().getFileExtension() ) )
       {
+         changeDetector.disable();
+
          final RunFlexPMDJob job = new RunFlexPMDJob( file.getLocation().toFile() );
          job.addJobChangeListener( new JobChangeAdapter()
          {
@@ -90,6 +98,10 @@ public class MonitorizeActivePartAction extends Action implements IActiveEditorC
                {
                   updateUIWithPMDResults( file,
                                           job.getProcessResult() );
+               }
+               else
+               {
+                  changeDetector.enable();
                }
             }
          } );
@@ -138,17 +150,25 @@ public class MonitorizeActivePartAction extends Action implements IActiveEditorC
    protected void updateUIWithPMDResults( final IFile file,
                                           final PmdViolationsVO violations )
    {
-      Display.getDefault().asyncExec( new Runnable()
-      {
-         public void run()
-         {
-            updatingMarkers = true;
-            FlexPMDMarkerUtils.cleanMarkers( file );
-            FlexPMDMarkerUtils.addMarkers( violations );
-            updatingMarkers = false;
 
-            view.loadMarkers( FlexPMDMarkerUtils.getMarkers( file ) );
+      FlexPMDMarkerUtils.cleanMarkers( file );
+
+      final Job job = FlexPMDMarkerUtils.addMarkers( violations );
+      job.addJobChangeListener( new JobChangeAdapter()
+      {
+         @Override
+         public void done( final IJobChangeEvent event )
+         {
+            Display.getDefault().asyncExec( new Runnable()
+            {
+               public void run()
+               {
+                  view.loadMarkers( FlexPMDMarkerUtils.getMarkers( file ) );
+                  changeDetector.enable();
+               }
+            } );
          }
       } );
+      job.schedule();
    }
 }

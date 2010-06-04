@@ -31,6 +31,7 @@
 package com.adobe.ac.pmd.eclipse.flexpmd.preferences;
 
 import java.io.File;
+import java.io.FilenameFilter;
 
 public final class PreferencesValidator
 {
@@ -56,10 +57,9 @@ public final class PreferencesValidator
    public static enum PmdInstallationValid
    {
       EMPTY("PreferencesValidator.emptyString"),
-      FILE_CONTAINS_SPACE("PreferencesValidator.fileContainingSpace"),
       FILE_NOT_EXIST("PreferencesValidator.fileNotExist"),
-      NOT_COMMAND_LINE("PreferencesValidator.notCommandLineExecutable"),
-      NOT_JAVA("PreferencesValidator.notJavaExecutable"),
+      NOT_A_FOLDER("PreferencesValidator.notAFolder"),
+      NOT_FLEXPMD_INSTALLACTION_FOLDER("PreferencesValidator.notInstallationFolder"),
       VALID("");
 
       private String key;
@@ -75,12 +75,32 @@ public final class PreferencesValidator
       }
    }
 
-   private static final String COMMAND_LINE = "command-line";
-   private static final String EMPTY_STRING = "";
-   private static final String JAR          = ".jar";
-   private static final String JAVA         = "java";
+   public static final String  FLEX_PMD_TOOL = "flex-pmd-command-line-";
+   public static final String  FLEX_CPD_TOOL = "flex-pmd-cpd-command-line-";
+   private static final String EMPTY_STRING  = "";
 
-   public static PmdInstallationValid validateFlexPmdInstallation( final String installationPath )
+   public static PmdInstallationValid validateFlexPmdRuleset( final String rulesetPath )
+   {
+      PmdInstallationValid validity = PmdInstallationValid.VALID;
+
+      if ( !( EMPTY_STRING.equals( rulesetPath ) || rulesetPath == null ) )
+      {
+         final File file = new File( rulesetPath );
+
+         if ( !file.exists() )
+         {
+            validity = PmdInstallationValid.FILE_NOT_EXIST;
+         }
+         else if ( !file.isDirectory() )
+         {
+            validity = PmdInstallationValid.FILE_NOT_EXIST;
+         }
+      }
+
+      return validity;
+   }
+
+   public static PmdInstallationValid validateRuntimeFolder( final String installationPath )
    {
       PmdInstallationValid validity = PmdInstallationValid.VALID;
       if ( EMPTY_STRING.equals( installationPath )
@@ -88,41 +108,115 @@ public final class PreferencesValidator
       {
          validity = PmdInstallationValid.EMPTY;
       }
-      else if ( !installationPath.contains( JAR ) )
-      {
-         validity = PmdInstallationValid.NOT_JAVA;
-      }
-      else if ( installationPath.contains( " " ) )
-      {
-         validity = PmdInstallationValid.FILE_CONTAINS_SPACE;
-      }
       else
       {
          final File file = new File( installationPath );
-         if ( !file.getName().contains( COMMAND_LINE ) )
-         {
-            validity = PmdInstallationValid.NOT_COMMAND_LINE;
-         }
-         else if ( !file.exists() )
+
+         if ( !file.exists() )
          {
             validity = PmdInstallationValid.FILE_NOT_EXIST;
+         }
+         else if ( !file.isDirectory() )
+         {
+            validity = PmdInstallationValid.FILE_NOT_EXIST;
+         }
+      }
+
+      return validity;
+   }
+
+   public static PmdInstallationValid validateFlexPmdInstallation( final String installationPath )
+   {
+      PmdInstallationValid validity = validateRuntimeFolder( installationPath );
+
+      if ( PmdInstallationValid.VALID.equals( validity ) )
+      {
+         if ( !isFlexPmdFolder( installationPath ) )
+         {
+            validity = PmdInstallationValid.NOT_FLEXPMD_INSTALLACTION_FOLDER;
          }
       }
       return validity;
    }
 
-   public static JavaVmValid validateJavaCommandLine( final String commandLine )
+   public static PmdInstallationValid validateFlexCpdInstallation( final String installationPath )
    {
-      if ( EMPTY_STRING.equals( commandLine )
-            || commandLine == null )
+      PmdInstallationValid validity = validateRuntimeFolder( installationPath );
+
+      if ( PmdInstallationValid.VALID.equals( validity ) )
       {
-         return JavaVmValid.EMPTY;
+         if ( !isFlexCpdFolder( installationPath ) )
+         {
+            validity = PmdInstallationValid.NOT_FLEXPMD_INSTALLACTION_FOLDER;
+         }
       }
-      if ( !commandLine.contains( JAVA ) )
+
+      return validity;
+   }
+
+   public static boolean isFlexPmdFolder( String folderPath )
+   {
+      File folder = new File( folderPath );
+
+      if ( hasTool( FLEX_PMD_TOOL,
+                    folder ) )
       {
-         return JavaVmValid.NO_JVM;
+         return true;
       }
-      return JavaVmValid.VALID;
+
+      return false;
+   }
+
+   public static boolean isFlexCpdFolder( String folderPath )
+   {
+      File folder = new File( folderPath );
+
+      if ( hasTool( FLEX_CPD_TOOL,
+                    folder ) )
+      {
+         return true;
+      }
+
+      return false;
+   }
+
+   private static boolean hasTool( final String toolName,
+                                   final File file )
+   {
+      String[] matchingFiles = file.list( new FilenameFilter()
+      {
+         public boolean accept( File dir,
+                                String name )
+         {
+
+            return name.contains( toolName );
+         }
+      } );
+
+      return matchingFiles.length > 0;
+   }
+
+   public static String getTool( final String toolName,
+                                 final String installationPath )
+   {
+      final File file = new File( installationPath );
+
+      String[] matchingFiles = file.list( new FilenameFilter()
+      {
+         public boolean accept( File dir,
+                                String name )
+         {
+
+            return name.contains( toolName );
+         }
+      } );
+
+      if ( matchingFiles.length > 0 )
+      {
+         return matchingFiles[ 0 ];
+      }
+
+      return null;
    }
 
    private PreferencesValidator()

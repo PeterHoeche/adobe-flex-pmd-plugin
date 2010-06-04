@@ -31,12 +31,15 @@
 package com.adobe.ac.pmd.eclipse.flexpmd.cmd;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Arrays;
 
 import com.adobe.ac.pmd.eclipse.FlexPMDPlugin;
-import com.adobe.ac.pmd.eclipse.flexpmd.FlexPMDKeys;
 import com.adobe.ac.pmd.eclipse.flexpmd.cmd.data.PmdViolationsVO;
 import com.adobe.ac.pmd.eclipse.flexpmd.preferences.FlexPMDPreferences;
+import com.adobe.ac.pmd.eclipse.flexpmd.preferences.PreferencesValidator;
+import com.adobe.ac.pmd.eclipse.flexpmd.preferences.PreferencesValidator.PmdInstallationValid;
 import com.adobe.ac.pmd.eclipse.utils.FileUtils;
 import com.adobe.ac.pmd.eclipse.utils.IProcessable;
 import com.adobe.ac.pmd.eclipse.utils.cli.SysCommandExecutor;
@@ -44,58 +47,137 @@ import com.adobe.ac.pmd.eclipse.utils.cli.SysCommandExecutorFactory;
 
 public class FlexPMD implements IProcessable< PmdViolationsVO >
 {
+   private FlexPMDPreferences configuration;
+   private String[]           commandLine;
+   private File               outPutDirectory;
+   private File               resource;
+
    public PmdViolationsVO process( final File resource ) throws FlexPmdExecutionException
    {
-      final FlexPMDPreferences conf = FlexPMDPreferences.get();
+      this.resource = resource;
 
-      if ( "".equals( conf.getPmdCommandLinePath() ) )
-      {
-         throw new FlexPmdExecutionException( FlexPMDKeys.MISSING_PMD_COMMAND_LINE );
-      }
-
-      if ( "".equals( conf.getJavaVmCommandLine() ) )
-      {
-         throw new FlexPmdExecutionException( FlexPMDKeys.MISSING_JAVA_COMMAND_LINE );
-      }
-
-      final SysCommandExecutor executor = SysCommandExecutorFactory.newInstance( resource );
+      loadRuntimeConfiguration();
 
       PmdViolationsVO pmdResults = null;
 
-      File outPutDirectory;
       try
       {
-         outPutDirectory = FileUtils.createTemporaryDirectory();
-
-         String[] commandLine = new String[]
-         { "java",
-                     conf.getJavaVmCommandLine(),
-                     "-jar",
-                     conf.getPmdCommandLinePath(),
-                     "-s",
-                     resource.getPath(),
-                     "-o",
-                     outPutDirectory.getAbsolutePath() };
-
-         if ( "".equals( conf.getRulesetPath() ) )
-         {
-            commandLine[ commandLine.length - 1 ] = "-r";
-            commandLine[ commandLine.length - 1 ] = conf.getRulesetPath();
-         }
-
-         FlexPMDPlugin.getDefault().logInfo( Arrays.toString( commandLine ) );
-         executor.runCommand( commandLine );
-
-         final File reportFile = new File( outPutDirectory.getAbsoluteFile()
-               + "/pmd.xml" );
-
-         pmdResults = FlexPMDResultsParser.parse( reportFile );
+         createOutputDirectory();
+         configureCommandLine();
+         executeCommandLine();
+         pmdResults = processResultsFile();
       }
       catch ( final Exception e )
       {
          FlexPMDPlugin.getDefault().logError( "Error running FlexPMD",
                                               e );
       }
+
+      return pmdResults;
+   }
+
+   private void loadRuntimeConfiguration() throws FlexPmdExecutionException
+   {
+      configuration = FlexPMDPreferences.get();
+
+      // Validate runtime installation
+      String runtimePath = configuration.getPmdCommandLinePath();
+      PmdInstallationValid installation = PreferencesValidator.validateFlexPmdInstallation( runtimePath );
+      if ( !PmdInstallationValid.VALID.equals( installation ) )
+      {
+         throw new FlexPmdExecutionException( "FlexPmd.configurationError" );
+      }
+
+      // Validate ruleset
+      installation = PreferencesValidator.validateFlexPmdRuleset( configuration.getRulesetPath() );
+      if ( !PmdInstallationValid.VALID.equals( installation ) )
+      {
+         throw new FlexPmdExecutionException( installation.getKey() );
+      }
+   }
+
+   private void createOutputDirectory() throws IOException
+   {
+      outPutDirectory = FileUtils.createTemporaryDirectory();
+   }
+
+   private void configureCommandLine()
+   {
+      createCommandLine();
+      addJavaInvocationParameters();
+      addJarParameters();
+      addSourceParameters();
+      addOutputParameters();
+      addCustomRulesetParameters();
+
+      FlexPMDPlugin.getDefault().logInfo( Arrays.toString( commandLine ) );
+   }
+
+   private void createCommandLine()
+   {
+      if ( hasCustomRuleset() )
+      {
+         commandLine = new String[ 10 ];
+      }
+      else
+      {
+         commandLine = new String[ 8 ];
+      }
+   }
+
+   private boolean hasCustomRuleset()
+   {
+      return !"".equals( configuration.getRulesetPath() );
+   }
+
+   private void addJavaInvocationParameters()
+   {
+      commandLine[ 0 ] = "java";
+      commandLine[ 1 ] = configuration.getJavaVmCommandLine();
+   }
+
+   private void addJarParameters()
+   {
+      String runtimePath = configuration.getPmdCommandLinePath();
+      String toolName = PreferencesValidator.getTool( PreferencesValidator.FLEX_PMD_TOOL,
+                                                      runtimePath );
+      commandLine[ 2 ] = "-jar";
+      commandLine[ 3 ] = configuration.getPmdCommandLinePath().concat( "/" ).concat( toolName );
+   }
+
+   private void addSourceParameters()
+   {
+      commandLine[ 4 ] = "-s";
+      commandLine[ 5 ] = resource.getPath();
+   }
+
+   private void addOutputParameters()
+   {
+      commandLine[ 6 ] = "-o";
+      commandLine[ 7 ] = outPutDirectory.getAbsolutePath();
+   }
+
+   private void addCustomRulesetParameters()
+   {
+      if ( hasCustomRuleset() )
+      {
+         commandLine[ 8 ] = "-r";
+         commandLine[ 9 ] = configuration.getRulesetPath();
+      }
+   }
+
+   private void executeCommandLine() throws Exception
+   {
+      final SysCommandExecutor executor = SysCommandExecutorFactory.newInstance( resource );
+      executor.runCommand( commandLine );
+   }
+
+   private PmdViolationsVO processResultsFile() throws FileNotFoundException
+   {
+      final File reportFile = new File( outPutDirectory.getAbsoluteFile()
+            + "/pmd.xml" );
+
+      PmdViolationsVO pmdResults = FlexPMDResultsParser.parse( reportFile );
 
       return pmdResults;
    }
