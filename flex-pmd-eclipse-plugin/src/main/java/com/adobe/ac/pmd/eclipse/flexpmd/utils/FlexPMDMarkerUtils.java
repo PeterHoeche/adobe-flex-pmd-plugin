@@ -174,11 +174,14 @@ public class FlexPMDMarkerUtils
 
    public static final void cleanMarkers( final File file )
    {
-      final IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
-      final IPath location = new Path( file.getPath() );
-      final IFile ifile = workspaceRoot.getFileForLocation( location );
+      if ( file.isFile() )
+      {
+         final IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
+         final IPath location = new Path( file.getPath() );
+         final IFile ifile = workspaceRoot.getFileForLocation( location );
 
-      cleanMarkers( ifile );
+         cleanMarkers( ifile );
+      }
    }
 
    public static final void cleanMarkers( final IFile file )

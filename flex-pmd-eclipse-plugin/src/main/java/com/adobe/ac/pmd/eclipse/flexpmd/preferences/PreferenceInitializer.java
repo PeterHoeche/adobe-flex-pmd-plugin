@@ -80,6 +80,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer
                                  e );
       }
 
-      return flexPmdDefaultPath.getPath();
+      return new Path( flexPmdDefaultPath.getFile() ).toString();
    }
 }

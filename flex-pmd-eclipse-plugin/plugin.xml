@@ -257,5 +257,5 @@
    </extension>
    <extension
          point="org.eclipse.ui.views">
-   </extension>
+   </extension>   
 </plugin>

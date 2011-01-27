@@ -74,8 +74,13 @@ public class ActivePartContentChangeDetector implements IPartListener2
       {
          final IResourceDelta docDelta = event.getDelta().findMember( activeEditorPath );
 
-         int contentModified = docDelta.getFlags()
-               & IResourceDelta.CONTENT;
+         int contentModified = 0;
+
+         if ( docDelta != null )
+         {
+            contentModified = docDelta.getFlags()
+                  & IResourceDelta.CONTENT;
+         }
 
          return contentModified == 0 ? false
                                     : true;
@@ -92,12 +97,6 @@ public class ActivePartContentChangeDetector implements IPartListener2
 
       public void resourceChanged( final IResourceChangeEvent event )
       {
-         /**
-          * isPostChangeEvent activeEditorPath kind == CHANGED flag ==
-          * IResourceDelta.CONTENT && !isAutoBuilding >> notifyPartChanged flag
-          * == IResourceDelta.MARKERS >> notifyPartMarkersChanged
-          **/
-
          if ( isPostChangeEvent( event ) )
          {
             if ( !isAutoBuilding( event )

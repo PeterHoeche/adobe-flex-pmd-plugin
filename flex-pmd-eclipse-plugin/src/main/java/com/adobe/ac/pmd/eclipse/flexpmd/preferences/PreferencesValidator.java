@@ -91,10 +91,6 @@ public final class PreferencesValidator
          {
             validity = PmdInstallationValid.FILE_NOT_EXIST;
          }
-         else if ( !file.isDirectory() )
-         {
-            validity = PmdInstallationValid.FILE_NOT_EXIST;
-         }
       }
 
       return validity;
