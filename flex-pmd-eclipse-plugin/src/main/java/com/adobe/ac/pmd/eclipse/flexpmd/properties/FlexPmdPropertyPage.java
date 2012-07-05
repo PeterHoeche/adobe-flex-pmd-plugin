@@ -7,8 +7,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.PreferencePage;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -43,7 +41,6 @@ public class FlexPmdPropertyPage extends PropertyPage
 		super();
 	}
 
-	@Override
 	public boolean performOk() 
 	{
 		try 
@@ -82,7 +79,6 @@ public class FlexPmdPropertyPage extends PropertyPage
 		return composite;
 	}
 
-	@Override
 	protected void performDefaults() 
 	{
 		super.performDefaults();
@@ -97,8 +93,7 @@ public class FlexPmdPropertyPage extends PropertyPage
 		enableProjectSpecificSettingsButton.setText( "Enable project specific settings" );
 		enableProjectSpecificSettingsButton.addListener( SWT.Selection, new Listener() 
 		{
-			@Override
-			public void handleEvent( Event arg0 ) 
+			public void handleEvent( Event event ) 
 			{
 				toggleEnableProjectSettingsState();
 			}
@@ -159,7 +154,6 @@ public class FlexPmdPropertyPage extends PropertyPage
 		rulesetBrowseButton.setLayoutData( new GridData( SWT.RIGHT ) );
 		rulesetBrowseButton.addListener( SWT.Selection, new Listener() 
 		{
-			@Override
 			public void handleEvent( Event arg0 ) 
 			{
 			    ElementTreeSelectionDialog dialog = new ElementTreeSelectionDialog( getShell(), new WorkbenchLabelProvider(), new BaseWorkbenchContentProvider() );
@@ -167,28 +161,14 @@ public class FlexPmdPropertyPage extends PropertyPage
 			    dialog.setInput( ( IResource ) getElement() );
 				dialog.setTitle( "Select FlexPMD custom ruleset" );
 				
-				dialog.addFilter( new ViewerFilter() 
-				{
-					
-					@Override
-					public boolean select( Viewer viewer, Object parentElement, Object element ) 
-					{
-						if ( element instanceof IFile && ( ( IFile)element ).getFullPath().getFileExtension().equals( "xml" ) )
-							return true;
-						else
-							return false;
-					}
-				} );
-				
 				dialog.setValidator( new ISelectionStatusValidator() 
 				{
-					@Override
 					public IStatus validate( Object[] selection ) 
 					{
-						if ( selection.length == 1 && selection[0] instanceof IFile ) 
+						if ( selection.length == 1 && selection[0] instanceof IFile && ( ( IFile)selection[0] ).getFileExtension().equals( "xml" ) ) 
 						      return new Status( IStatus.OK, FlexPMDPlugin.PLUGIN_ID, 0, "", null );
 						
-						return new Status( IStatus.ERROR, FlexPMDPlugin.PLUGIN_ID, 0, "Please select the ruleset file!", null );
+						return new Status( IStatus.ERROR, FlexPMDPlugin.PLUGIN_ID, 0, "Please select your ruleset file!", null );
 					}
 				} );
 				

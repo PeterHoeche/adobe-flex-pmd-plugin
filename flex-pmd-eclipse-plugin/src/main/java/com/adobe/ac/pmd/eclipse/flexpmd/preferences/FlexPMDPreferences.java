@@ -66,7 +66,6 @@ public final class FlexPMDPreferences
 	   
 	   FlexPMDPlugin.getDefault().getWorkbench().getDisplay().syncExec( new Runnable() 
 	   {
-		   @Override
 		   public void run() 
 		   {
 			   ISelection selection = FlexPMDPlugin.getDefault().getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection();
