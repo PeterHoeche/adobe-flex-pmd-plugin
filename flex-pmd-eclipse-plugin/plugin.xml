@@ -257,5 +257,18 @@
    </extension>
    <extension
          point="org.eclipse.ui.views">
+   </extension>
+   <extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            class="com.adobe.ac.pmd.eclipse.flexpmd.properties.FlexPmdPropertyPage"
+            id="com.adobe.ac.pmd.eclipse.flexpmd.properties.flexPmdPropertyPage"
+            name="FlexPMD">
+         <enabledWhen>
+            <instanceof
+                  value="org.eclipse.core.resources.IProject">
+            </instanceof>
+         </enabledWhen>
+      </page>
    </extension>   
 </plugin>
