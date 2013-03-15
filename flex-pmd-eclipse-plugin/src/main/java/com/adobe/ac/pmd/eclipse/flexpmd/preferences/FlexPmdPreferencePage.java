@@ -49,12 +49,14 @@ public class FlexPmdPreferencePage extends FieldEditorPreferencePage implements 
    private static final String  CPD_MINIMUM_TOKENS              = "FlexPmdPreferencePage.MinimumTokens";
    private static final String  CUSTOM_RULESET_KEY              = "FlexPmdPreferencePage.customRuleset";
    private static final String  JAVA_COMMAND_LINE_ARGUMENTS_KEY = "FlexPmdPreferencePage.JavaCommandLineArguments";
+   private static final String 	CLASSPATH_ARGUMENTS_KEY			= "FlexPmdPreferencePage.ClasspathArguments";
    private static final String  USE_BUNDLED_RUNTIME             = "FlexPmdPreferencePage.useBundledRuntime";
    private static final String  FIELD_EDITOR_VALUE              = "field_editor_value";
 
    private IntegerFieldEditor   cpdMinimumTokensField;
    private DirectoryFieldEditor flexPmdInstallationPathField;
    private StringFieldEditor    javaCommandLineArgumentsField;
+   private StringFieldEditor	classpathArgumentsField;
    private BooleanFieldEditor   useBundledFlexPmdCheckBox;
 
    public FlexPmdPreferencePage()
@@ -88,10 +90,15 @@ public class FlexPmdPreferencePage extends FieldEditorPreferencePage implements 
       javaCommandLineArgumentsField = new StringFieldEditor( PreferenceConstants.JAVA_COMMAND_LINE_ARGUMENTS,
                                                              MessageUtils.getString( JAVA_COMMAND_LINE_ARGUMENTS_KEY ),
                                                              getFieldEditorParent() );
+      
+      classpathArgumentsField = new StringFieldEditor( 	PreferenceConstants.CLASSPATH_ARGUMENTS, 
+    		  											MessageUtils.getString( CLASSPATH_ARGUMENTS_KEY ), 
+    		  											getFieldEditorParent() );
 
       addField( useBundledFlexPmdCheckBox );
       addField( flexPmdInstallationPathField );
       addField( javaCommandLineArgumentsField );
+      addField( classpathArgumentsField );
    }
 
    private void addCustomRulesetField()

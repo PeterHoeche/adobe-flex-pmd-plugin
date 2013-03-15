@@ -51,6 +51,7 @@ public final class FlexPMDPreferences
       final IPreferenceStore preferenceStore = FlexPMDPlugin.getDefault().getPreferenceStore();
       
       final FlexPMDPreferences preferences = new FlexPMDPreferences( preferenceStore.getString( PreferenceConstants.COMMAND_LINE_INSTALLATION_PATH ),
+    		  						 preferenceStore.getString( PreferenceConstants.CLASSPATH_ARGUMENTS ),
                                      preferenceStore.getString( PreferenceConstants.JAVA_COMMAND_LINE_ARGUMENTS ),
                                      preferenceStore.getString( PreferenceConstants.RULESET ),
                                      preferenceStore.getString( PreferenceConstants.CPD_MINIMUM_TOKENS ) );
@@ -105,15 +106,18 @@ public final class FlexPMDPreferences
    private final String cpdMinimumLines;
    private String       javaVmMemory;
    private String       pmdCommandLinePath;
+   private String		classpath;
 
    private String       rulesetPath;
 
    private FlexPMDPreferences( final String commandLinePathToBeSet,
+		   					   final String classpath,
                                final String javaVmMemoryToBeSet,
                                final String rulesetPathToBeSet,
                                final String cpdMinimumLinesToBeSet )
    {
       pmdCommandLinePath = commandLinePathToBeSet;
+      this.setClasspath(classpath);
       javaVmMemory = javaVmMemoryToBeSet;
       rulesetPath = rulesetPathToBeSet;
       cpdMinimumLines = cpdMinimumLinesToBeSet;
@@ -152,5 +156,15 @@ public final class FlexPMDPreferences
    public final void setRulesetPath( final String rulesetPathToBeSet )
    {
       rulesetPath = rulesetPathToBeSet;
+   }
+
+   public String getClasspath() 
+   {
+	  return classpath;
+   }
+
+   public void setClasspath( String classpath ) 
+   {
+	  this.classpath = classpath;
    }
 }

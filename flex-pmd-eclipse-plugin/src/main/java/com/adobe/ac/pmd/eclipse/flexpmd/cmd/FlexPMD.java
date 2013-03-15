@@ -33,7 +33,9 @@ package com.adobe.ac.pmd.eclipse.flexpmd.cmd;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
+
+import org.apache.tools.ant.types.Commandline;
 
 import com.adobe.ac.pmd.eclipse.FlexPMDPlugin;
 import com.adobe.ac.pmd.eclipse.flexpmd.cmd.data.PmdViolationsVO;
@@ -48,7 +50,7 @@ import com.adobe.ac.pmd.eclipse.utils.cli.SysCommandExecutorFactory;
 public class FlexPMD implements IProcessable< PmdViolationsVO >
 {
    private FlexPMDPreferences configuration;
-   private String[]           commandLine;
+   private ArrayList<String>  commandLine;
    private File               outPutDirectory;
    private File               resource;
 
@@ -101,28 +103,21 @@ public class FlexPMD implements IProcessable< PmdViolationsVO >
       outPutDirectory = FileUtils.createTemporaryDirectory();
    }
 
-   private void configureCommandLine()
+   private void configureCommandLine() throws FlexPmdExecutionException
    {
       createCommandLine();
       addJavaInvocationParameters();
-      addJarParameters();
+      addClasspathParameters();
       addSourceParameters();
       addOutputParameters();
       addCustomRulesetParameters();
 
-      FlexPMDPlugin.getDefault().logInfo( Arrays.toString( commandLine ) );
+      FlexPMDPlugin.getDefault().logInfo( commandLine.toString() );
    }
 
    private void createCommandLine()
    {
-      if ( hasCustomRuleset() )
-      {
-         commandLine = new String[ 10 ];
-      }
-      else
-      {
-         commandLine = new String[ 8 ];
-      }
+	   commandLine = new ArrayList<String>();
    }
 
    private boolean hasCustomRuleset()
@@ -130,46 +125,57 @@ public class FlexPMD implements IProcessable< PmdViolationsVO >
       return !"".equals( configuration.getRulesetPath() );
    }
 
-   private void addJavaInvocationParameters()
+   private void addJavaInvocationParameters() throws FlexPmdExecutionException
    {
-      commandLine[ 0 ] = "java";
-      commandLine[ 1 ] = configuration.getJavaVmCommandLine();
+      commandLine.add( "java" );
+      
+      String[] jvmCommandLineArgs = Commandline.translateCommandline( configuration.getJavaVmCommandLine() );
+      
+      for ( String argument:jvmCommandLineArgs )
+    	  commandLine.add( argument );
    }
 
-   private void addJarParameters()
+   private void addClasspathParameters()
    {
       String runtimePath = configuration.getPmdCommandLinePath();
       String toolName = PreferencesValidator.getTool( PreferencesValidator.FLEX_PMD_TOOL,
                                                       runtimePath );
-      commandLine[ 2 ] = "-jar";
-      commandLine[ 3 ] = configuration.getPmdCommandLinePath().concat( "/" ).concat( toolName );
+      
+      String classpath = configuration.getPmdCommandLinePath().concat( "/" ).concat( toolName );
+      
+      if ( configuration.getClasspath().length() != 0 )
+    	  classpath += File.pathSeparator + configuration.getClasspath(); 
+      
+      commandLine.add( "-classpath" );
+      commandLine.add( classpath );
+      commandLine.add( "com.adobe.ac.pmd.commandline.FlexPMD" );
    }
 
    private void addSourceParameters()
    {
-      commandLine[ 4 ] = "-s";
-      commandLine[ 5 ] = resource.getPath();
+	   commandLine.add( "-s" );
+	   commandLine.add( resource.getPath() );
    }
 
    private void addOutputParameters()
    {
-      commandLine[ 6 ] = "-o";
-      commandLine[ 7 ] = outPutDirectory.getAbsolutePath();
+	   commandLine.add( "-o" );
+	   commandLine.add( outPutDirectory.getAbsolutePath() );
    }
 
    private void addCustomRulesetParameters()
    {
       if ( hasCustomRuleset() )
       {
-         commandLine[ 8 ] = "-r";
-         commandLine[ 9 ] = configuration.getRulesetPath();
+         commandLine.add( "-r" );
+         commandLine.add( configuration.getRulesetPath() );
       }
    }
 
    private void executeCommandLine() throws Exception
    {
       final SysCommandExecutor executor = SysCommandExecutorFactory.newInstance( resource );
-      executor.runCommand( commandLine );
+      executor.runCommand( commandLine.toArray( new String[commandLine.size()] ) );
    }
 
    private PmdViolationsVO processResultsFile() throws FileNotFoundException

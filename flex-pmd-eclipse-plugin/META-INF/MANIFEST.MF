@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: FlexPMD Plug-in
 Bundle-SymbolicName: com.adobe.ac.pmd.eclipse;singleton:=true
-Bundle-Version: 1.1.2.vqualifier
+Bundle-Version: 1.1.3.vqualifier
 Bundle-Activator: com.adobe.ac.pmd.eclipse.FlexPMDPlugin
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,

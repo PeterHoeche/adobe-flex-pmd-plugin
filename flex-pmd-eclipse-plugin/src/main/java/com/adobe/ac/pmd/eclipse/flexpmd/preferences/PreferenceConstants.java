@@ -37,6 +37,7 @@ public final class PreferenceConstants
    public static final String JAVA_COMMAND_LINE_ARGUMENTS    = "javaVmMemory";
    public static final String RULESET                        = "ruleset";
    public static final String USE_BUNDLED_FLEXPMD            = "useBundledFlexPMD";
+   public static final String CLASSPATH_ARGUMENTS 			 = "classpathArguments";
 
    private PreferenceConstants()
    {
